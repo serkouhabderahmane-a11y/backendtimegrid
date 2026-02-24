@@ -1,0 +1,513 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum OnboardingState {
+  candidate_created
+  packet_assigned
+  in_progress
+  pending_hr_review
+  approved
+  employee_active
+}
+
+enum TaskStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+enum TaskType {
+  personal_info
+  government_forms
+  document_upload
+  policy_acknowledgment
+  training_acknowledgment
+  e_signature
+  role_confirmation
+}
+
+enum EmploymentType {
+  full_time
+  part_time
+  contract
+  intern
+}
+
+enum UserRole {
+  admin
+  hr
+  manager
+  employee
+}
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  domain      String?  @unique
+  settings    String   @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users              User[]
+  candidates         Candidate[]
+  onboardingPackets  OnboardingPacket[]
+  locations          Location[]
+  departments        Department[]
+  roles              TenantRole[]
+  auditLogs          AuditLog[]
+  employees          Employee[]
+  onboardings        EmployeeOnboarding[]
+  tasks              OnboardingTask[]
+  documents          Document[]
+  eSignEnvelopes     ESignEnvelope[]
+  payPeriods         PayPeriod[]
+  dailyNotes         DailyNote[]
+  marRecords         MedicationAdministrationRecord[]
+}
+
+model User {
+  id            String   @id @default(uuid())
+  tenantId      String
+  email         String
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          UserRole
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee      Employee?
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([tenantId, email])
+}
+
+model Employee {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  tenantId        String
+  employeeNumber  String?
+  departmentId    String?
+  locationId      String?
+  tenantRoleId    String?
+  startDate       DateTime
+  onboardingStatus OnboardingState @default(candidate_created)
+  canClockIn      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant          Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department      Department?  @relation(fields: [departmentId], references: [id])
+  location        Location?    @relation(fields: [locationId], references: [id])
+  tenantRole      TenantRole?  @relation(fields: [tenantRoleId], references: [id])
+  timeEntries     TimeEntry[]
+  dailyNotes      DailyNote[]
+  marRecords      MedicationAdministrationRecord[]
+  payrollRecords  PayrollRecord[]
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employees Employee[]
+  candidates Candidate[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employees Employee[]
+  candidates Candidate[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model TenantRole {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  permissions String     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employees   Employee[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model OnboardingPacket {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  tasks       String     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignments EmployeeOnboarding[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Candidate {
+  id              String           @id @default(uuid())
+  tenantId        String
+  firstName       String
+  lastName        String
+  email           String
+  phone           String?
+  position        String
+  locationId      String?
+  departmentId    String?
+  employmentType  EmploymentType
+  startDate       DateTime
+  state           OnboardingState  @default(candidate_created)
+  rejectedReason  String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  location        Location?          @relation(fields: [locationId], references: [id])
+  department      Department?        @relation(fields: [departmentId], references: [id])
+  onboarding      EmployeeOnboarding?
+  documents       Document[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([tenantId, state])
+  @@index([tenantId, email])
+}
+
+model EmployeeOnboarding {
+  id                  String            @id @default(uuid())
+  candidateId         String            @unique
+  packetId            String
+  tenantId            String
+  secureToken         String            @unique @default(uuid())
+  tokenExpiresAt      DateTime
+  progressPercent     Int               @default(0)
+  currentState        OnboardingState   @default(packet_assigned)
+  completedAt         DateTime?
+  activatedAt         DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  candidate           Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  packet              OnboardingPacket  @relation(fields: [packetId], references: [id])
+  tenant              Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  taskStatuses        EmployeeOnboardingTaskStatus[]
+
+  @@index([tenantId])
+  @@index([secureToken])
+  @@index([tenantId, candidateId])
+}
+
+model OnboardingTask {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  type        TaskType
+  description String?
+  isRequired  Boolean  @default(true)
+  order       Int      @default(0)
+  config      String     @default("{}")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant                              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  statuses    EmployeeOnboardingTaskStatus[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, type])
+}
+
+model EmployeeOnboardingTaskStatus {
+  id                    String     @id @default(uuid())
+  onboardingId          String
+  taskId                String
+  status                TaskStatus @default(draft)
+  submissionData        String?
+  submittedAt           DateTime?
+  reviewedAt            DateTime?
+  reviewComment         String?
+  reviewedByUserId      String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  onboarding             EmployeeOnboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  task                  OnboardingTask     @relation(fields: [taskId], references: [id])
+
+  @@unique([onboardingId, taskId])
+  @@index([onboardingId])
+  @@index([taskId])
+  @@index([onboardingId, status])
+}
+
+model Document {
+  id              String   @id @default(uuid())
+  candidateId     String
+  tenantId        String
+  name            String
+  type            String
+  fileUrl         String
+  fileSize        Int?
+  mimeType        String?
+  expiresAt       DateTime?
+  uploadedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  candidate       Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([candidateId])
+  @@index([tenantId, expiresAt])
+}
+
+model ESignEnvelope {
+  id              String   @id @default(uuid())
+  candidateId     String
+  tenantId        String
+  taskStatusId    String?
+  envelopeId      String?
+  status          String   @default("pending")
+  documentUrl     String?
+  signedDocumentUrl String?
+  signatureHash   String?
+  signedAt        DateTime?
+  signerName      String?
+  signerEmail     String?
+  ipAddress       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([candidateId])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String?
+  oldValues   String?
+  newValues   String?
+  metadata    String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, createdAt])
+  @@index([userId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model TimeEntry {
+  id          String    @id @default(uuid())
+  employeeId  String
+  clockIn     DateTime
+  clockOut    DateTime?
+  breakMinutes Int      @default(0)
+  totalMinutes Int?
+  status      TimesheetStatus @default(submitted)
+  approvedAt  DateTime?
+  approvedBy   String?
+  rejectionReason String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payPeriod   PayPeriod? @relation(fields: [payPeriodId], references: [id])
+  payPeriodId String?
+
+  @@index([employeeId])
+  @@index([employeeId, clockIn])
+  @@index([payPeriodId])
+}
+
+enum TimesheetStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+enum PayPeriodStatus {
+  open
+  locked
+  calculated
+  exported
+}
+
+model PayPeriod {
+  id              String          @id @default(uuid())
+  tenantId        String
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  status          PayPeriodStatus @default(open)
+  lockedAt        DateTime?
+  lockedBy        String?
+  calculatedAt    DateTime?
+  exportedAt      DateTime?
+  exportProvider  String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  timeEntries     TimeEntry[]
+  payrollRecords  PayrollRecord[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+}
+
+enum PayrollStatus {
+  calculated
+  exported
+}
+
+model PayrollRecord {
+  id              String        @id @default(uuid())
+  payPeriodId     String
+  employeeId      String
+  totalHours      Float
+  breakDeductions Float
+  overtimeHours  Float
+  overtimePay     Float
+  regularPay      Float
+  grossPay        Float
+  payRate         Float
+  status          PayrollStatus @default(calculated)
+  calculatedAt    DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  payPeriod       PayPeriod     @relation(fields: [payPeriodId], references: [id], onDelete: Cascade)
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([payPeriodId, employeeId])
+  @@index([payPeriodId])
+  @@index([employeeId])
+}
+
+enum DailyNoteStatus {
+  draft
+  submitted
+  locked
+}
+
+model DailyNote {
+  id              String          @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  date            DateTime
+  content         String
+  attachments     String          @default("[]")
+  status          DailyNoteStatus @default(draft)
+  lockedAt        DateTime?
+  lockedBy        String?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee        Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, employeeId, date])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([tenantId, status])
+}
+
+enum MARStatus {
+  scheduled
+  given
+  missed
+  refused
+  locked
+}
+
+model MedicationAdministrationRecord {
+  id              String        @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  medicationName  String
+  scheduledTime   DateTime
+  outcome         MARStatus
+  outcomeTime     DateTime?
+  reasonNotGiven  String?
+  administeredBy  String?
+  lockedAt        DateTime?
+  lockedBy        String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([tenantId, outcome])
+}
