@@ -16,6 +16,7 @@ exports.TimeEntriesController = void 0;
 const common_1 = require("@nestjs/common");
 const time_entries_service_1 = require("./time-entries.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 let TimeEntriesController = class TimeEntriesController {
     timeEntriesService;
     constructor(timeEntriesService) {
@@ -32,6 +33,24 @@ let TimeEntriesController = class TimeEntriesController {
     }
     async getEntries(req, startDate, endDate) {
         return this.timeEntriesService.getEntries(req.user.id, req.user.tenantId, startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : undefined);
+    }
+    async getAllTimesheets(req, payPeriodId) {
+        return this.timeEntriesService.getAllTimesheets(req.user.tenantId, payPeriodId);
+    }
+    async assignToPayPeriod(req, body) {
+        return this.timeEntriesService.assignToPayPeriod(req.user.tenantId, body.timesheetId, body.payPeriodId);
+    }
+    async approveTimesheet(req, id) {
+        return this.timeEntriesService.approveTimesheet(req.user.tenantId, id, req.user.id);
+    }
+    async rejectTimesheet(req, id, body) {
+        return this.timeEntriesService.rejectTimesheet(req.user.tenantId, id, req.user.id, body.reason);
+    }
+    async reviewTimesheet(req, id) {
+        return this.timeEntriesService.reviewTimesheet(req.user.tenantId, id, req.user.id);
+    }
+    async getTimesheetsForPayPeriod(req, payPeriodId) {
+        return this.timeEntriesService.getTimesheetsForPayPeriod(req.user.tenantId, payPeriodId);
     }
 };
 exports.TimeEntriesController = TimeEntriesController;
@@ -65,6 +84,61 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], TimeEntriesController.prototype, "getEntries", null);
+__decorate([
+    (0, common_1.Get)('admin/all'),
+    (0, roles_decorator_1.Roles)('admin', 'hr', 'manager'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('payPeriodId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TimeEntriesController.prototype, "getAllTimesheets", null);
+__decorate([
+    (0, common_1.Post)('admin/assign'),
+    (0, roles_decorator_1.Roles)('admin', 'hr', 'manager'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], TimeEntriesController.prototype, "assignToPayPeriod", null);
+__decorate([
+    (0, common_1.Post)(':id/approve'),
+    (0, roles_decorator_1.Roles)('admin', 'manager'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TimeEntriesController.prototype, "approveTimesheet", null);
+__decorate([
+    (0, common_1.Post)(':id/reject'),
+    (0, roles_decorator_1.Roles)('admin', 'manager'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], TimeEntriesController.prototype, "rejectTimesheet", null);
+__decorate([
+    (0, common_1.Post)(':id/review'),
+    (0, roles_decorator_1.Roles)('admin', 'hr'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TimeEntriesController.prototype, "reviewTimesheet", null);
+__decorate([
+    (0, common_1.Get)('pay-period/:payPeriodId'),
+    (0, roles_decorator_1.Roles)('admin', 'hr', 'manager'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('payPeriodId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TimeEntriesController.prototype, "getTimesheetsForPayPeriod", null);
 exports.TimeEntriesController = TimeEntriesController = __decorate([
     (0, common_1.Controller)('time-entries'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

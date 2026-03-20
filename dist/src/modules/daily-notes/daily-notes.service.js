@@ -29,7 +29,22 @@ let DailyNotesService = class DailyNotesService {
             },
         });
     }
-    async createNote(tenantId, userId, employeeId, data) {
+    canAccessNotes(userContext) {
+        if (userContext.role === 'hr') {
+            return false;
+        }
+        return true;
+    }
+    filterByAccess(userContext, baseWhere) {
+        if (userContext.role === 'employee' && userContext.employeeId) {
+            return { ...baseWhere, employeeId: userContext.employeeId };
+        }
+        return baseWhere;
+    }
+    async createNote(tenantId, userId, employeeId, data, userContext) {
+        if (!this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        }
         const employee = await this.prisma.employee.findFirst({
             where: { id: employeeId, tenantId },
         });
@@ -55,6 +70,7 @@ let DailyNotesService = class DailyNotesService {
                     content: data.content,
                     attachments: JSON.stringify(data.attachments || []),
                     status: 'draft',
+                    participantId: data.participantId,
                 },
             });
             return updated;
@@ -67,15 +83,22 @@ let DailyNotesService = class DailyNotesService {
                 content: data.content,
                 attachments: JSON.stringify(data.attachments || []),
                 status: 'draft',
+                participantId: data.participantId,
             },
         });
     }
-    async submitNote(tenantId, userId, id) {
+    async submitNote(tenantId, userId, id, userContext) {
+        if (!this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        }
         const note = await this.prisma.dailyNote.findFirst({
             where: { id, tenantId },
         });
         if (!note) {
             throw new common_1.NotFoundException('Note not found');
+        }
+        if (userContext.role === 'employee' && userContext.employeeId !== note.employeeId) {
+            throw new common_1.ForbiddenException('Cannot submit other employees\' notes');
         }
         if (note.status === 'locked') {
             throw new common_1.ForbiddenException('Cannot submit locked note');
@@ -87,12 +110,20 @@ let DailyNotesService = class DailyNotesService {
         await this.logAudit(tenantId, userId, 'SUBMIT_DAILY_NOTE', 'DailyNote', id);
         return updated;
     }
-    async getNotes(tenantId, employeeId, status) {
-        const where = { tenantId };
-        if (employeeId)
-            where.employeeId = employeeId;
-        if (status)
-            where.status = status;
+    async getNotes(tenantId, userId, params, userContext) {
+        if (!this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        }
+        const where = this.filterByAccess(userContext, { tenantId });
+        if (params.employeeId)
+            where.employeeId = params.employeeId;
+        if (params.status)
+            where.status = params.status;
+        if (params.participantId)
+            where.participantId = params.participantId;
+        if (params.startDate && params.endDate) {
+            where.date = { gte: params.startDate, lte: params.endDate };
+        }
         return this.prisma.dailyNote.findMany({
             where,
             include: {
@@ -103,7 +134,10 @@ let DailyNotesService = class DailyNotesService {
             orderBy: { date: 'desc' },
         });
     }
-    async getNote(tenantId, id) {
+    async getNote(tenantId, id, userContext) {
+        if (!this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        }
         const note = await this.prisma.dailyNote.findFirst({
             where: { id, tenantId },
             include: {
@@ -115,9 +149,15 @@ let DailyNotesService = class DailyNotesService {
         if (!note) {
             throw new common_1.NotFoundException('Note not found');
         }
+        if (userContext.role === 'employee' && userContext.employeeId !== note.employeeId) {
+            throw new common_1.ForbiddenException('Cannot view other employees\' notes');
+        }
         return note;
     }
-    async reviewNote(tenantId, userId, id) {
+    async reviewNote(tenantId, userId, id, userContext) {
+        if (!this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        }
         const note = await this.prisma.dailyNote.findFirst({
             where: { id, tenantId },
         });
@@ -137,7 +177,10 @@ let DailyNotesService = class DailyNotesService {
         await this.logAudit(tenantId, userId, 'REVIEW_DAILY_NOTE', 'DailyNote', id);
         return updated;
     }
-    async lockNote(tenantId, userId, id) {
+    async lockNote(tenantId, userId, id, userContext) {
+        if (!this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        }
         const note = await this.prisma.dailyNote.findFirst({
             where: { id, tenantId },
         });
@@ -160,13 +203,23 @@ let DailyNotesService = class DailyNotesService {
         });
         return updated;
     }
-    async exportNotes(tenantId, userId, startDate, endDate) {
+    async exportNotes(tenantId, userId, startDate, endDate, params, userContext) {
+        if (userContext && !this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        }
+        const where = {
+            tenantId,
+            status: 'locked',
+            date: { gte: startDate, lte: endDate },
+        };
+        if (params?.participantId) {
+            where.participantId = params.participantId;
+        }
+        if (userContext?.role === 'employee' && userContext.employeeId) {
+            where.employeeId = userContext.employeeId;
+        }
         const notes = await this.prisma.dailyNote.findMany({
-            where: {
-                tenantId,
-                status: 'locked',
-                date: { gte: startDate, lte: endDate },
-            },
+            where,
             include: {
                 employee: {
                     include: { user: true },
@@ -178,6 +231,7 @@ let DailyNotesService = class DailyNotesService {
             noteId: note.id,
             date: note.date,
             content: note.content,
+            participantId: note.participantId,
             attachments: JSON.parse(note.attachments || '[]'),
             author: {
                 id: note.employeeId,

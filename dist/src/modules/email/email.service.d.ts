@@ -4,6 +4,7 @@ export declare class EmailService {
     sendTaskRejectionNotification(email: string, taskName: string, reason: string): Promise<void>;
     sendTaskApprovalNotification(email: string, taskName: string): Promise<void>;
     sendActivationNotification(email: string, firstName: string): Promise<void>;
+    sendSignedOfferLetter(email: string, firstName: string, signedDocumentUrl: string): Promise<void>;
     private send;
     private sendViaSES;
     private sendViaSMTP;

@@ -77,8 +77,8 @@ export declare class TenantsController {
         updatedAt: Date;
         tenantId: string;
         isActive: boolean;
-        description: string | null;
         type: import("@prisma/client").$Enums.TaskType;
+        description: string | null;
         isRequired: boolean;
         order: number;
         config: string;

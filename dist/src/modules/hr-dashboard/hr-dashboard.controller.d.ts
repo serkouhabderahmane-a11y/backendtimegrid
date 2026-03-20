@@ -35,8 +35,8 @@ export declare class HrDashboardController {
                     updatedAt: Date;
                     tenantId: string;
                     isActive: boolean;
-                    description: string | null;
                     type: import("@prisma/client").$Enums.TaskType;
+                    description: string | null;
                     isRequired: boolean;
                     order: number;
                     config: string;
@@ -125,8 +125,8 @@ export declare class HrDashboardController {
             updatedAt: Date;
             tenantId: string;
             isActive: boolean;
-            description: string | null;
             type: import("@prisma/client").$Enums.TaskType;
+            description: string | null;
             isRequired: boolean;
             order: number;
             config: string;
@@ -184,8 +184,8 @@ export declare class HrDashboardController {
             updatedAt: Date;
             tenantId: string;
             isActive: boolean;
-            description: string | null;
             type: import("@prisma/client").$Enums.TaskType;
+            description: string | null;
             isRequired: boolean;
             order: number;
             config: string;
@@ -220,20 +220,21 @@ export declare class HrDashboardController {
             employmentType: import("@prisma/client").$Enums.EmploymentType;
             startDate: Date;
             rejectedReason: string | null;
-        };
+        } | null;
     } & {
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
-        expiresAt: Date | null;
         type: string;
-        candidateId: string;
+        expiresAt: Date | null;
+        candidateId: string | null;
         fileUrl: string;
         fileSize: number | null;
         mimeType: string | null;
         uploadedAt: Date;
+        employeeId: string | null;
     })[]>;
     getExpiringDocuments(tenantId: string, days?: string): Promise<({
         candidate: {
@@ -252,19 +253,20 @@ export declare class HrDashboardController {
             employmentType: import("@prisma/client").$Enums.EmploymentType;
             startDate: Date;
             rejectedReason: string | null;
-        };
+        } | null;
     } & {
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
-        expiresAt: Date | null;
         type: string;
-        candidateId: string;
+        expiresAt: Date | null;
+        candidateId: string | null;
         fileUrl: string;
         fileSize: number | null;
         mimeType: string | null;
         uploadedAt: Date;
+        employeeId: string | null;
     })[]>;
 }

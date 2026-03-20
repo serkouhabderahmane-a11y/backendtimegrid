@@ -2,6 +2,14 @@ import { PrismaService } from '../../config/config.module';
 import { OnboardingStateMachine } from './onboarding-state-machine.service';
 import { AuditLogger } from '../../modules/audit-logs/audit-logger.service';
 import { EmailService } from '../email/email.service';
+export declare enum OnboardingStep {
+    PERSONAL_INFO = "personal_info",
+    OFFER_LETTER = "offer_letter",
+    DOCUMENT_UPLOAD = "document_upload",
+    TRAINING_VIDEO = "training_video",
+    SIGNATURE = "signature",
+    COMPLETE = "complete"
+}
 export declare class OnboardingService {
     private prisma;
     private stateMachine;
@@ -47,8 +55,8 @@ export declare class OnboardingService {
                 updatedAt: Date;
                 tenantId: string;
                 isActive: boolean;
-                description: string | null;
                 type: import("@prisma/client").$Enums.TaskType;
+                description: string | null;
                 isRequired: boolean;
                 order: number;
                 config: string;
@@ -118,8 +126,8 @@ export declare class OnboardingService {
             updatedAt: Date;
             tenantId: string;
             isActive: boolean;
-            description: string | null;
             type: import("@prisma/client").$Enums.TaskType;
+            description: string | null;
             isRequired: boolean;
             order: number;
             config: string;
@@ -202,5 +210,110 @@ export declare class OnboardingService {
             status: import("@prisma/client").$Enums.TaskStatus;
             isRequired: boolean;
         }[];
+    }>;
+    getOnboardingSteps(secureToken: string): Promise<{
+        onboardingId: string;
+        candidate: {
+            firstName: string;
+            lastName: string;
+            email: string;
+        };
+        currentStep: OnboardingStep;
+        steps: {
+            status: any;
+            step: OnboardingStep;
+            title: string;
+            order: number;
+        }[];
+        progressPercent: number;
+    }>;
+    private calculateStepStatuses;
+    private calculateStepProgress;
+    submitPersonalInfo(onboardingId: string, tenantId: string, data: {
+        firstName: string;
+        lastName: string;
+        phone: string;
+        address: string;
+        emergencyContact: string;
+        emergencyPhone: string;
+    }): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    createOfferLetterEnvelope(onboardingId: string, tenantId: string, data: {
+        action: 'view' | 'accept' | 'reject';
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        ipAddress: string | null;
+        candidateId: string;
+        status: string;
+        taskStatusId: string | null;
+        envelopeId: string | null;
+        provider: string | null;
+        documentUrl: string | null;
+        signedDocumentUrl: string | null;
+        signatureHash: string | null;
+        signedAt: Date | null;
+        signerName: string | null;
+        signerEmail: string | null;
+        payloadJson: string | null;
+        sentAt: Date | null;
+    }>;
+    signOfferLetter(onboardingId: string, tenantId: string, signatureData: {
+        signatureType: 'typed' | 'handwritten';
+        typedName?: string;
+        signatureImageUrl?: string;
+    }): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    private generateSignatureHash;
+    uploadDocuments(onboardingId: string, tenantId: string, documents: Array<{
+        name: string;
+        type: string;
+        fileUrl: string;
+        fileSize?: number;
+        mimeType?: string;
+    }>): Promise<{
+        success: boolean;
+        documents: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string;
+            type: string;
+            expiresAt: Date | null;
+            candidateId: string | null;
+            fileUrl: string;
+            fileSize: number | null;
+            mimeType: string | null;
+            uploadedAt: Date;
+            employeeId: string | null;
+        }[];
+    }>;
+    updateTrainingProgress(onboardingId: string, tenantId: string, watchProgress: number): Promise<{
+        success: boolean;
+        watchProgress: any;
+        canSign: boolean;
+    }>;
+    acknowledgeTraining(onboardingId: string, tenantId: string, signatureHash: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    submitFinalSignature(onboardingId: string, tenantId: string, signatureData: {
+        signatureType: 'typed' | 'handwritten';
+        typedName?: string;
+        signatureImageUrl?: string;
+    }): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    completeOnboarding(onboardingId: string, tenantId: string): Promise<{
+        success: boolean;
+        message: string;
     }>;
 }

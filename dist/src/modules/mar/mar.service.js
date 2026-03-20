@@ -29,7 +29,22 @@ let MarService = class MarService {
             },
         });
     }
-    async createMarEntry(tenantId, userId, employeeId, data) {
+    canAccessMar(userContext) {
+        if (userContext.role === 'hr') {
+            return false;
+        }
+        return true;
+    }
+    filterByAccess(userContext, baseWhere) {
+        if (userContext.role === 'employee' && userContext.employeeId) {
+            return { ...baseWhere, employeeId: userContext.employeeId };
+        }
+        return baseWhere;
+    }
+    async createMarEntry(tenantId, userId, employeeId, data, userContext) {
+        if (!this.canAccessMar(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+        }
         const employee = await this.prisma.employee.findFirst({
             where: { id: employeeId, tenantId },
         });
@@ -43,15 +58,22 @@ let MarService = class MarService {
                 medicationName: data.medicationName,
                 scheduledTime: data.scheduledTime,
                 outcome: 'scheduled',
+                participantId: data.participantId,
             },
         });
     }
-    async recordOutcome(tenantId, userId, id, data) {
+    async recordOutcome(tenantId, userId, id, data, userContext) {
+        if (!this.canAccessMar(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+        }
         const entry = await this.prisma.medicationAdministrationRecord.findFirst({
             where: { id, tenantId },
         });
         if (!entry) {
             throw new common_1.NotFoundException('MAR entry not found');
+        }
+        if (userContext.role === 'employee' && userContext.employeeId !== entry.employeeId) {
+            throw new common_1.ForbiddenException('Cannot modify other employees\' MAR entries');
         }
         if (entry.outcome === 'locked') {
             throw new common_1.ForbiddenException('Cannot modify locked MAR entry');
@@ -86,7 +108,10 @@ let MarService = class MarService {
             },
         });
     }
-    async lockEntry(tenantId, userId, id) {
+    async lockEntry(tenantId, userId, id, userContext) {
+        if (!this.canAccessMar(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+        }
         const entry = await this.prisma.medicationAdministrationRecord.findFirst({
             where: { id, tenantId },
         });
@@ -109,12 +134,20 @@ let MarService = class MarService {
         });
         return updated;
     }
-    async getMarEntries(tenantId, employeeId, outcome) {
-        const where = { tenantId };
-        if (employeeId)
-            where.employeeId = employeeId;
-        if (outcome)
-            where.outcome = outcome;
+    async getMarEntries(tenantId, userId, params, userContext) {
+        if (!this.canAccessMar(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+        }
+        const where = this.filterByAccess(userContext, { tenantId });
+        if (params.employeeId)
+            where.employeeId = params.employeeId;
+        if (params.outcome)
+            where.outcome = params.outcome;
+        if (params.participantId)
+            where.participantId = params.participantId;
+        if (params.startDate && params.endDate) {
+            where.scheduledTime = { gte: params.startDate, lte: params.endDate };
+        }
         return this.prisma.medicationAdministrationRecord.findMany({
             where,
             include: {
@@ -125,7 +158,10 @@ let MarService = class MarService {
             orderBy: { scheduledTime: 'desc' },
         });
     }
-    async getMarEntry(tenantId, id) {
+    async getMarEntry(tenantId, id, userContext) {
+        if (!this.canAccessMar(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+        }
         const entry = await this.prisma.medicationAdministrationRecord.findFirst({
             where: { id, tenantId },
             include: {
@@ -137,15 +173,26 @@ let MarService = class MarService {
         if (!entry) {
             throw new common_1.NotFoundException('MAR entry not found');
         }
+        if (userContext.role === 'employee' && userContext.employeeId !== entry.employeeId) {
+            throw new common_1.ForbiddenException('Cannot view other employees\' MAR entries');
+        }
         return entry;
     }
-    async exportMarEntries(tenantId, userId, startDate, endDate, employeeId) {
+    async exportMarEntries(tenantId, userId, startDate, endDate, params, userContext) {
+        if (userContext && !this.canAccessMar(userContext)) {
+            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+        }
         const where = {
             tenantId,
             scheduledTime: { gte: startDate, lte: endDate },
         };
-        if (employeeId)
-            where.employeeId = employeeId;
+        if (params?.participantId)
+            where.participantId = params.participantId;
+        if (params?.employeeId)
+            where.employeeId = params.employeeId;
+        if (userContext?.role === 'employee' && userContext.employeeId) {
+            where.employeeId = userContext.employeeId;
+        }
         const entries = await this.prisma.medicationAdministrationRecord.findMany({
             where,
             include: {
@@ -162,6 +209,7 @@ let MarService = class MarService {
             outcomeTime: entry.outcomeTime,
             reasonNotGiven: entry.reasonNotGiven,
             staffReference: entry.administeredBy,
+            participantId: entry.participantId,
             employee: {
                 id: entry.employeeId,
                 name: `${entry.employee.user.firstName} ${entry.employee.user.lastName}`,

@@ -17,6 +17,12 @@ let TimeEntriesService = class TimeEntriesService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async getOpenPayPeriod(tenantId) {
+        return this.prisma.payPeriod.findFirst({
+            where: { tenantId, status: 'open' },
+            orderBy: { startDate: 'desc' },
+        });
+    }
     async clockIn(userId, tenantId) {
         const employee = await this.prisma.employee.findFirst({
             where: { userId, tenantId },
@@ -47,10 +53,13 @@ let TimeEntriesService = class TimeEntriesService {
         if (existingEntry) {
             throw new common_1.ForbiddenException('Already clocked in today');
         }
+        const openPayPeriod = await this.getOpenPayPeriod(tenantId);
         const timeEntry = await this.prisma.timeEntry.create({
             data: {
                 employeeId: employee.id,
                 clockIn: new Date(),
+                payPeriodId: openPayPeriod?.id,
+                status: openPayPeriod ? 'submitted' : 'draft',
             },
         });
         return timeEntry;
@@ -129,6 +138,141 @@ let TimeEntriesService = class TimeEntriesService {
             where,
             orderBy: { clockIn: 'desc' },
         });
+    }
+    async getAllTimesheets(tenantId, payPeriodId) {
+        const where = { tenantId };
+        if (payPeriodId) {
+            where.payPeriodId = payPeriodId;
+        }
+        const employees = await this.prisma.employee.findMany({
+            where: { tenantId },
+            include: { user: true },
+        });
+        const employeeMap = new Map(employees.map(e => [e.id, e]));
+        const timesheets = await this.prisma.timeEntry.findMany({
+            where,
+            include: { employee: { include: { user: true } } },
+            orderBy: { clockIn: 'desc' },
+        });
+        return timesheets;
+    }
+    async assignToPayPeriod(tenantId, timesheetId, payPeriodId) {
+        const timesheet = await this.prisma.timeEntry.findFirst({
+            where: { id: timesheetId },
+        });
+        if (!timesheet) {
+            throw new common_1.NotFoundException('Timesheet not found');
+        }
+        const payPeriod = await this.prisma.payPeriod.findFirst({
+            where: { id: payPeriodId, tenantId },
+        });
+        if (!payPeriod) {
+            throw new common_1.NotFoundException('Pay period not found');
+        }
+        if (payPeriod.status !== 'open') {
+            throw new common_1.ForbiddenException('Cannot assign timesheet to locked pay period');
+        }
+        return this.prisma.timeEntry.update({
+            where: { id: timesheetId },
+            data: {
+                payPeriodId,
+                status: 'submitted',
+            },
+        });
+    }
+    async approveTimesheet(tenantId, timesheetId, userId) {
+        const timesheet = await this.prisma.timeEntry.findFirst({
+            where: { id: timesheetId },
+            include: { employee: true },
+        });
+        if (!timesheet || timesheet.employee.tenantId !== tenantId) {
+            throw new common_1.NotFoundException('Timesheet not found');
+        }
+        if (timesheet.status !== 'submitted') {
+            throw new common_1.BadRequestException('Only submitted timesheets can be approved');
+        }
+        const updated = await this.prisma.timeEntry.update({
+            where: { id: timesheetId },
+            data: {
+                status: 'approved',
+                approvedAt: new Date(),
+                approvedBy: userId,
+            },
+        });
+        await this.prisma.auditLog.create({
+            data: {
+                tenantId,
+                userId,
+                action: 'APPROVE_TIMESHEET',
+                entityType: 'TimeEntry',
+                entityId: timesheetId,
+            },
+        });
+        return updated;
+    }
+    async rejectTimesheet(tenantId, timesheetId, userId, reason) {
+        const timesheet = await this.prisma.timeEntry.findFirst({
+            where: { id: timesheetId },
+            include: { employee: true },
+        });
+        if (!timesheet || timesheet.employee.tenantId !== tenantId) {
+            throw new common_1.NotFoundException('Timesheet not found');
+        }
+        if (timesheet.status !== 'submitted') {
+            throw new common_1.BadRequestException('Only submitted timesheets can be rejected');
+        }
+        const updated = await this.prisma.timeEntry.update({
+            where: { id: timesheetId },
+            data: {
+                status: 'rejected',
+                rejectionReason: reason,
+            },
+        });
+        await this.prisma.auditLog.create({
+            data: {
+                tenantId,
+                userId,
+                action: 'REJECT_TIMESHEET',
+                entityType: 'TimeEntry',
+                entityId: timesheetId,
+                metadata: JSON.stringify({ reason }),
+            },
+        });
+        return updated;
+    }
+    async reviewTimesheet(tenantId, timesheetId, userId) {
+        const timesheet = await this.prisma.timeEntry.findFirst({
+            where: { id: timesheetId },
+            include: { employee: true },
+        });
+        if (!timesheet || timesheet.employee.tenantId !== tenantId) {
+            throw new common_1.NotFoundException('Timesheet not found');
+        }
+        if (timesheet.status !== 'approved') {
+            throw new common_1.BadRequestException('Only approved timesheets can be reviewed by HR');
+        }
+        return {
+            ...timesheet,
+            hrReviewed: true,
+            hrReviewedAt: new Date(),
+        };
+    }
+    async getTimesheetsForPayPeriod(tenantId, payPeriodId) {
+        const timesheets = await this.prisma.timeEntry.findMany({
+            where: {
+                payPeriodId,
+                employee: {
+                    tenantId,
+                },
+            },
+            include: {
+                employee: {
+                    include: { user: true },
+                },
+            },
+            orderBy: { clockIn: 'asc' },
+        });
+        return timesheets;
     }
 };
 exports.TimeEntriesService = TimeEntriesService;

@@ -16,12 +16,17 @@ async function bootstrap() {
     }),
   );
 
+  const corsOrigin = process.env.CORS_ORIGIN || process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : 'http://localhost:5173';
+  
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: corsOrigin,
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`Application running on: http://localhost:${process.env.PORT ?? 3000}`);
+  const port = process.env.PORT || process.env.VERCEL_PORT || 3000;
+  await app.listen(port);
+  console.log(`Application running on port: ${port}`);
 }
 bootstrap();

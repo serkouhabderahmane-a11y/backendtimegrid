@@ -26,6 +26,33 @@ let OnboardingController = class OnboardingController {
     async getByToken(secureToken) {
         return this.onboardingService.getOnboardingByToken(secureToken);
     }
+    async getOnboardingSteps(secureToken) {
+        return this.onboardingService.getOnboardingSteps(secureToken);
+    }
+    async submitPersonalInfo(onboardingId, tenantId, data) {
+        return this.onboardingService.submitPersonalInfo(onboardingId, tenantId, data);
+    }
+    async createOfferLetterEnvelope(onboardingId, tenantId, data) {
+        return this.onboardingService.createOfferLetterEnvelope(onboardingId, tenantId, data);
+    }
+    async signOfferLetter(onboardingId, tenantId, data) {
+        return this.onboardingService.signOfferLetter(onboardingId, tenantId, data);
+    }
+    async uploadDocuments(onboardingId, tenantId, documents) {
+        return this.onboardingService.uploadDocuments(onboardingId, tenantId, documents);
+    }
+    async updateTrainingProgress(onboardingId, tenantId, watchProgress) {
+        return this.onboardingService.updateTrainingProgress(onboardingId, tenantId, watchProgress);
+    }
+    async acknowledgeTraining(onboardingId, tenantId, signatureHash) {
+        return this.onboardingService.acknowledgeTraining(onboardingId, tenantId, signatureHash);
+    }
+    async submitFinalSignature(onboardingId, tenantId, data) {
+        return this.onboardingService.submitFinalSignature(onboardingId, tenantId, data);
+    }
+    async completeOnboarding(onboardingId, tenantId) {
+        return this.onboardingService.completeOnboarding(onboardingId, tenantId);
+    }
     async saveDraft(onboardingId, taskId, tenantId, submissionData) {
         return this.onboardingService.saveTaskDraft(onboardingId, taskId, tenantId, submissionData);
     }
@@ -50,6 +77,84 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], OnboardingController.prototype, "getByToken", null);
+__decorate([
+    (0, common_1.Get)('steps/:secureToken'),
+    __param(0, (0, common_1.Param)('secureToken')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "getOnboardingSteps", null);
+__decorate([
+    (0, common_1.Post)('steps/personal-info'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "submitPersonalInfo", null);
+__decorate([
+    (0, common_1.Post)('steps/offer-letter'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "createOfferLetterEnvelope", null);
+__decorate([
+    (0, common_1.Post)('steps/sign-offer-letter'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "signOfferLetter", null);
+__decorate([
+    (0, common_1.Post)('steps/documents'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Array]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "uploadDocuments", null);
+__decorate([
+    (0, common_1.Post)('steps/training/progress'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __param(2, (0, common_1.Body)('watchProgress')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "updateTrainingProgress", null);
+__decorate([
+    (0, common_1.Post)('steps/training/acknowledge'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __param(2, (0, common_1.Body)('signatureHash')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "acknowledgeTraining", null);
+__decorate([
+    (0, common_1.Post)('steps/signature'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "submitFinalSignature", null);
+__decorate([
+    (0, common_1.Post)('steps/complete'),
+    __param(0, (0, common_1.Body)('onboardingId')),
+    __param(1, (0, common_1.Body)('tenantId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], OnboardingController.prototype, "completeOnboarding", null);
 __decorate([
     (0, common_1.Post)(':onboardingId/tasks/:taskId/draft'),
     __param(0, (0, common_1.Param)('onboardingId')),

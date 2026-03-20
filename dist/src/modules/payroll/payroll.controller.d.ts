@@ -64,6 +64,8 @@ export declare class PayrollController {
                 employeeNumber: string | null;
                 onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
                 canClockIn: boolean;
+                hourlyRate: number;
+                overtimeRate: number;
                 tenantRoleId: string | null;
             };
         } & {

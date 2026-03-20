@@ -2,10 +2,12 @@ import { MarService } from './mar.service';
 export declare class MarController {
     private marService;
     constructor(marService: MarService);
+    private getUserContext;
     createMarEntry(req: any, body: {
         employeeId: string;
         medicationName: string;
         scheduledTime: string;
+        participantId?: string;
     }): Promise<{
         id: string;
         createdAt: Date;
@@ -14,6 +16,7 @@ export declare class MarController {
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         medicationName: string;
         scheduledTime: Date;
         outcome: import("@prisma/client").$Enums.MARStatus;
@@ -33,6 +36,7 @@ export declare class MarController {
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         medicationName: string;
         scheduledTime: Date;
         outcome: import("@prisma/client").$Enums.MARStatus;
@@ -48,6 +52,7 @@ export declare class MarController {
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         medicationName: string;
         scheduledTime: Date;
         outcome: import("@prisma/client").$Enums.MARStatus;
@@ -55,7 +60,7 @@ export declare class MarController {
         reasonNotGiven: string | null;
         administeredBy: string | null;
     }>;
-    getMarEntries(req: any, employeeId?: string, outcome?: string): Promise<({
+    getMarEntries(req: any, employeeId?: string, outcome?: string, participantId?: string, startDate?: string, endDate?: string): Promise<({
         employee: {
             user: {
                 id: string;
@@ -82,6 +87,8 @@ export declare class MarController {
             employeeNumber: string | null;
             onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
             canClockIn: boolean;
+            hourlyRate: number;
+            overtimeRate: number;
             tenantRoleId: string | null;
         };
     } & {
@@ -92,6 +99,7 @@ export declare class MarController {
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         medicationName: string;
         scheduledTime: Date;
         outcome: import("@prisma/client").$Enums.MARStatus;
@@ -126,6 +134,8 @@ export declare class MarController {
             employeeNumber: string | null;
             onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
             canClockIn: boolean;
+            hourlyRate: number;
+            overtimeRate: number;
             tenantRoleId: string | null;
         };
     } & {
@@ -136,6 +146,7 @@ export declare class MarController {
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         medicationName: string;
         scheduledTime: Date;
         outcome: import("@prisma/client").$Enums.MARStatus;
@@ -147,6 +158,7 @@ export declare class MarController {
         startDate: string;
         endDate: string;
         employeeId?: string;
+        participantId?: string;
     }): Promise<{
         startDate: Date;
         endDate: Date;
@@ -159,6 +171,7 @@ export declare class MarController {
             outcomeTime: Date | null;
             reasonNotGiven: string | null;
             staffReference: string | null;
+            participantId: string | null;
             employee: {
                 id: string;
                 name: string;

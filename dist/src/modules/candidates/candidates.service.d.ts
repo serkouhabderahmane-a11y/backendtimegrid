@@ -85,13 +85,14 @@ export declare class CandidatesService {
             createdAt: Date;
             updatedAt: Date;
             tenantId: string;
-            expiresAt: Date | null;
             type: string;
-            candidateId: string;
+            expiresAt: Date | null;
+            candidateId: string | null;
             fileUrl: string;
             fileSize: number | null;
             mimeType: string | null;
             uploadedAt: Date;
+            employeeId: string | null;
         }[];
         location: {
             id: string;
@@ -130,8 +131,8 @@ export declare class CandidatesService {
                     updatedAt: Date;
                     tenantId: string;
                     isActive: boolean;
-                    description: string | null;
                     type: import("@prisma/client").$Enums.TaskType;
+                    description: string | null;
                     isRequired: boolean;
                     order: number;
                     config: string;

@@ -23,29 +23,49 @@ let DailyNotesController = class DailyNotesController {
     constructor(dailyNotesService) {
         this.dailyNotesService = dailyNotesService;
     }
+    getUserContext(req) {
+        return {
+            userId: req.user.id,
+            role: req.user.role,
+            employeeId: req.user.employee?.id,
+        };
+    }
     async createNote(req, body) {
+        const userContext = this.getUserContext(req);
         return this.dailyNotesService.createNote(req.user.tenantId, req.user.id, body.employeeId, {
             ...body,
             date: new Date(body.date),
-        });
+        }, userContext);
     }
     async submitNote(req, id) {
-        return this.dailyNotesService.submitNote(req.user.tenantId, req.user.id, id);
+        const userContext = this.getUserContext(req);
+        return this.dailyNotesService.submitNote(req.user.tenantId, req.user.id, id, userContext);
     }
-    async getNotes(req, employeeId, status) {
-        return this.dailyNotesService.getNotes(req.user.tenantId, employeeId, status);
+    async getNotes(req, employeeId, status, participantId, startDate, endDate) {
+        const userContext = this.getUserContext(req);
+        return this.dailyNotesService.getNotes(req.user.tenantId, req.user.id, {
+            employeeId,
+            status,
+            participantId,
+            startDate: startDate ? new Date(startDate) : undefined,
+            endDate: endDate ? new Date(endDate) : undefined,
+        }, userContext);
     }
     async getNote(req, id) {
-        return this.dailyNotesService.getNote(req.user.tenantId, id);
+        const userContext = this.getUserContext(req);
+        return this.dailyNotesService.getNote(req.user.tenantId, id, userContext);
     }
     async reviewNote(req, id) {
-        return this.dailyNotesService.reviewNote(req.user.tenantId, req.user.id, id);
+        const userContext = this.getUserContext(req);
+        return this.dailyNotesService.reviewNote(req.user.tenantId, req.user.id, id, userContext);
     }
     async lockNote(req, id) {
-        return this.dailyNotesService.lockNote(req.user.tenantId, req.user.id, id);
+        const userContext = this.getUserContext(req);
+        return this.dailyNotesService.lockNote(req.user.tenantId, req.user.id, id, userContext);
     }
     async exportNotes(req, body) {
-        return this.dailyNotesService.exportNotes(req.user.tenantId, req.user.id, new Date(body.startDate), new Date(body.endDate));
+        const userContext = this.getUserContext(req);
+        return this.dailyNotesService.exportNotes(req.user.tenantId, req.user.id, new Date(body.startDate), new Date(body.endDate), { participantId: body.participantId }, userContext);
     }
 };
 exports.DailyNotesController = DailyNotesController;
@@ -70,8 +90,11 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('employeeId')),
     __param(2, (0, common_1.Query)('status')),
+    __param(3, (0, common_1.Query)('participantId')),
+    __param(4, (0, common_1.Query)('startDate')),
+    __param(5, (0, common_1.Query)('endDate')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], DailyNotesController.prototype, "getNotes", null);
 __decorate([
@@ -84,7 +107,7 @@ __decorate([
 ], DailyNotesController.prototype, "getNote", null);
 __decorate([
     (0, common_1.Post)(':id/review'),
-    (0, roles_decorator_1.Roles)('admin', 'hr', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -93,7 +116,7 @@ __decorate([
 ], DailyNotesController.prototype, "reviewNote", null);
 __decorate([
     (0, common_1.Post)(':id/lock'),
-    (0, roles_decorator_1.Roles)('admin', 'hr', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -102,7 +125,7 @@ __decorate([
 ], DailyNotesController.prototype, "lockNote", null);
 __decorate([
     (0, common_1.Post)('export'),
-    (0, roles_decorator_1.Roles)('admin', 'hr', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

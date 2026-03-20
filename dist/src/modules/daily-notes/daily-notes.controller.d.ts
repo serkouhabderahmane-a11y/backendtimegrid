@@ -2,23 +2,26 @@ import { DailyNotesService } from './daily-notes.service';
 export declare class DailyNotesController {
     private dailyNotesService;
     constructor(dailyNotesService: DailyNotesService);
+    private getUserContext;
     createNote(req: any, body: {
         employeeId: string;
         date: string;
         content: string;
         attachments?: string[];
+        participantId?: string;
     }): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        content: string;
         status: import("@prisma/client").$Enums.DailyNoteStatus;
         reviewedAt: Date | null;
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         date: Date;
-        content: string;
         attachments: string;
         reviewedBy: string | null;
     }>;
@@ -27,17 +30,18 @@ export declare class DailyNotesController {
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        content: string;
         status: import("@prisma/client").$Enums.DailyNoteStatus;
         reviewedAt: Date | null;
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         date: Date;
-        content: string;
         attachments: string;
         reviewedBy: string | null;
     }>;
-    getNotes(req: any, employeeId?: string, status?: string): Promise<({
+    getNotes(req: any, employeeId?: string, status?: string, participantId?: string, startDate?: string, endDate?: string): Promise<({
         employee: {
             user: {
                 id: string;
@@ -64,6 +68,8 @@ export declare class DailyNotesController {
             employeeNumber: string | null;
             onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
             canClockIn: boolean;
+            hourlyRate: number;
+            overtimeRate: number;
             tenantRoleId: string | null;
         };
     } & {
@@ -71,13 +77,14 @@ export declare class DailyNotesController {
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        content: string;
         status: import("@prisma/client").$Enums.DailyNoteStatus;
         reviewedAt: Date | null;
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         date: Date;
-        content: string;
         attachments: string;
         reviewedBy: string | null;
     })[]>;
@@ -108,6 +115,8 @@ export declare class DailyNotesController {
             employeeNumber: string | null;
             onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
             canClockIn: boolean;
+            hourlyRate: number;
+            overtimeRate: number;
             tenantRoleId: string | null;
         };
     } & {
@@ -115,13 +124,14 @@ export declare class DailyNotesController {
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        content: string;
         status: import("@prisma/client").$Enums.DailyNoteStatus;
         reviewedAt: Date | null;
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         date: Date;
-        content: string;
         attachments: string;
         reviewedBy: string | null;
     }>;
@@ -130,13 +140,14 @@ export declare class DailyNotesController {
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        content: string;
         status: import("@prisma/client").$Enums.DailyNoteStatus;
         reviewedAt: Date | null;
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         date: Date;
-        content: string;
         attachments: string;
         reviewedBy: string | null;
     }>;
@@ -145,19 +156,21 @@ export declare class DailyNotesController {
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        content: string;
         status: import("@prisma/client").$Enums.DailyNoteStatus;
         reviewedAt: Date | null;
         employeeId: string;
         lockedAt: Date | null;
         lockedBy: string | null;
+        participantId: string | null;
         date: Date;
-        content: string;
         attachments: string;
         reviewedBy: string | null;
     }>;
     exportNotes(req: any, body: {
         startDate: string;
         endDate: string;
+        participantId?: string;
     }): Promise<{
         startDate: Date;
         endDate: Date;
@@ -167,6 +180,7 @@ export declare class DailyNotesController {
             noteId: string;
             date: Date;
             content: string;
+            participantId: string | null;
             attachments: any;
             author: {
                 id: string;

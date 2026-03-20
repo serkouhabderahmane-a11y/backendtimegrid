@@ -2,6 +2,7 @@ import { PrismaService } from '../../config/config.module';
 export declare class TimeEntriesService {
     private prisma;
     constructor(prisma: PrismaService);
+    private getOpenPayPeriod;
     clockIn(userId: string, tenantId: string): Promise<{
         id: string;
         createdAt: Date;
@@ -62,4 +63,174 @@ export declare class TimeEntriesService {
         rejectionReason: string | null;
         payPeriodId: string | null;
     }[]>;
+    getAllTimesheets(tenantId: string, payPeriodId?: string): Promise<({
+        employee: {
+            user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                tenantId: string;
+                email: string;
+                passwordHash: string;
+                firstName: string;
+                lastName: string;
+                role: import("@prisma/client").$Enums.UserRole;
+                isActive: boolean;
+                lastLoginAt: Date | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string;
+            userId: string;
+            locationId: string | null;
+            departmentId: string | null;
+            startDate: Date;
+            employeeNumber: string | null;
+            onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
+            canClockIn: boolean;
+            hourlyRate: number;
+            overtimeRate: number;
+            tenantRoleId: string | null;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.TimesheetStatus;
+        employeeId: string;
+        clockIn: Date;
+        clockOut: Date | null;
+        breakMinutes: number;
+        totalMinutes: number | null;
+        approvedAt: Date | null;
+        approvedBy: string | null;
+        rejectionReason: string | null;
+        payPeriodId: string | null;
+    })[]>;
+    assignToPayPeriod(tenantId: string, timesheetId: string, payPeriodId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.TimesheetStatus;
+        employeeId: string;
+        clockIn: Date;
+        clockOut: Date | null;
+        breakMinutes: number;
+        totalMinutes: number | null;
+        approvedAt: Date | null;
+        approvedBy: string | null;
+        rejectionReason: string | null;
+        payPeriodId: string | null;
+    }>;
+    approveTimesheet(tenantId: string, timesheetId: string, userId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.TimesheetStatus;
+        employeeId: string;
+        clockIn: Date;
+        clockOut: Date | null;
+        breakMinutes: number;
+        totalMinutes: number | null;
+        approvedAt: Date | null;
+        approvedBy: string | null;
+        rejectionReason: string | null;
+        payPeriodId: string | null;
+    }>;
+    rejectTimesheet(tenantId: string, timesheetId: string, userId: string, reason: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.TimesheetStatus;
+        employeeId: string;
+        clockIn: Date;
+        clockOut: Date | null;
+        breakMinutes: number;
+        totalMinutes: number | null;
+        approvedAt: Date | null;
+        approvedBy: string | null;
+        rejectionReason: string | null;
+        payPeriodId: string | null;
+    }>;
+    reviewTimesheet(tenantId: string, timesheetId: string, userId: string): Promise<{
+        hrReviewed: boolean;
+        hrReviewedAt: Date;
+        employee: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string;
+            userId: string;
+            locationId: string | null;
+            departmentId: string | null;
+            startDate: Date;
+            employeeNumber: string | null;
+            onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
+            canClockIn: boolean;
+            hourlyRate: number;
+            overtimeRate: number;
+            tenantRoleId: string | null;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.TimesheetStatus;
+        employeeId: string;
+        clockIn: Date;
+        clockOut: Date | null;
+        breakMinutes: number;
+        totalMinutes: number | null;
+        approvedAt: Date | null;
+        approvedBy: string | null;
+        rejectionReason: string | null;
+        payPeriodId: string | null;
+    }>;
+    getTimesheetsForPayPeriod(tenantId: string, payPeriodId: string): Promise<({
+        employee: {
+            user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                tenantId: string;
+                email: string;
+                passwordHash: string;
+                firstName: string;
+                lastName: string;
+                role: import("@prisma/client").$Enums.UserRole;
+                isActive: boolean;
+                lastLoginAt: Date | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string;
+            userId: string;
+            locationId: string | null;
+            departmentId: string | null;
+            startDate: Date;
+            employeeNumber: string | null;
+            onboardingStatus: import("@prisma/client").$Enums.OnboardingState;
+            canClockIn: boolean;
+            hourlyRate: number;
+            overtimeRate: number;
+            tenantRoleId: string | null;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.TimesheetStatus;
+        employeeId: string;
+        clockIn: Date;
+        clockOut: Date | null;
+        breakMinutes: number;
+        totalMinutes: number | null;
+        approvedAt: Date | null;
+        approvedBy: string | null;
+        rejectionReason: string | null;
+        payPeriodId: string | null;
+    })[]>;
 }

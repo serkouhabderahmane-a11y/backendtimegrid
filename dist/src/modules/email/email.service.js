@@ -57,6 +57,22 @@ let EmailService = EmailService_1 = class EmailService {
       `,
         });
     }
+    async sendSignedOfferLetter(email, firstName, signedDocumentUrl) {
+        const appLink = process.env.APP_URL || 'https://timegrid.app';
+        await this.send({
+            to: email,
+            subject: 'Your signed offer letter',
+            body: `
+        <h1>Your signed offer letter</h1>
+        <p>Dear ${firstName},</p>
+        <p>Your offer letter has been signed successfully.</p>
+        <h2>Download the TimeGrid app:</h2>
+        <p><a href="${appLink}">${appLink}</a></p>
+        <h2>Signed Document:</h2>
+        <p><a href="${signedDocumentUrl}">View Signed Offer Letter</a></p>
+      `,
+        });
+    }
     async send(options) {
         const provider = process.env.EMAIL_PROVIDER || 'console';
         this.logger.log(`Sending email to ${options.to}: ${options.subject}`);

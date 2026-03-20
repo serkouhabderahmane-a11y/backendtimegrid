@@ -11,6 +11,8 @@ import { EmailService } from './modules/email/email.service';
 import { PayrollModule } from './modules/payroll/payroll.module';
 import { DailyNotesModule } from './modules/daily-notes/daily-notes.module';
 import { MarModule } from './modules/mar/mar.module';
+import { SocialFeedModule } from './modules/social-feed/social-feed.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { MarModule } from './modules/mar/mar.module';
     PayrollModule,
     DailyNotesModule,
     MarModule,
+    SocialFeedModule,
+    ChatModule,
   ],
   providers: [AuditLogger, EmailService],
 })

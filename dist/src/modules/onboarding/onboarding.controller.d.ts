@@ -40,8 +40,8 @@ export declare class OnboardingController {
                 updatedAt: Date;
                 tenantId: string;
                 isActive: boolean;
-                description: string | null;
                 type: import("@prisma/client").$Enums.TaskType;
+                description: string | null;
                 isRequired: boolean;
                 order: number;
                 config: string;
@@ -70,6 +70,108 @@ export declare class OnboardingController {
         currentState: import("@prisma/client").$Enums.OnboardingState;
         completedAt: Date | null;
         activatedAt: Date | null;
+    }>;
+    getOnboardingSteps(secureToken: string): Promise<{
+        onboardingId: string;
+        candidate: {
+            firstName: string;
+            lastName: string;
+            email: string;
+        };
+        currentStep: import("./onboarding.service").OnboardingStep;
+        steps: {
+            status: any;
+            step: import("./onboarding.service").OnboardingStep;
+            title: string;
+            order: number;
+        }[];
+        progressPercent: number;
+    }>;
+    submitPersonalInfo(onboardingId: string, tenantId: string, data: {
+        firstName: string;
+        lastName: string;
+        phone: string;
+        address: string;
+        emergencyContact: string;
+        emergencyPhone: string;
+    }): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    createOfferLetterEnvelope(onboardingId: string, tenantId: string, data: {
+        action: 'view' | 'accept' | 'reject';
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        ipAddress: string | null;
+        candidateId: string;
+        status: string;
+        taskStatusId: string | null;
+        envelopeId: string | null;
+        provider: string | null;
+        documentUrl: string | null;
+        signedDocumentUrl: string | null;
+        signatureHash: string | null;
+        signedAt: Date | null;
+        signerName: string | null;
+        signerEmail: string | null;
+        payloadJson: string | null;
+        sentAt: Date | null;
+    }>;
+    signOfferLetter(onboardingId: string, tenantId: string, data: {
+        signatureType: 'typed' | 'handwritten';
+        typedName?: string;
+        signatureImageUrl?: string;
+    }): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    uploadDocuments(onboardingId: string, tenantId: string, documents: Array<{
+        name: string;
+        type: string;
+        fileUrl: string;
+        fileSize?: number;
+        mimeType?: string;
+    }>): Promise<{
+        success: boolean;
+        documents: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string;
+            type: string;
+            expiresAt: Date | null;
+            candidateId: string | null;
+            fileUrl: string;
+            fileSize: number | null;
+            mimeType: string | null;
+            uploadedAt: Date;
+            employeeId: string | null;
+        }[];
+    }>;
+    updateTrainingProgress(onboardingId: string, tenantId: string, watchProgress: number): Promise<{
+        success: boolean;
+        watchProgress: any;
+        canSign: boolean;
+    }>;
+    acknowledgeTraining(onboardingId: string, tenantId: string, signatureHash: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    submitFinalSignature(onboardingId: string, tenantId: string, data: {
+        signatureType: 'typed' | 'handwritten';
+        typedName?: string;
+        signatureImageUrl?: string;
+    }): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    completeOnboarding(onboardingId: string, tenantId: string): Promise<{
+        success: boolean;
+        message: string;
     }>;
     saveDraft(onboardingId: string, taskId: string, tenantId: string, submissionData: Record<string, any>): Promise<{
         id: string;

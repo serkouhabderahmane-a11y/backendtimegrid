@@ -84,7 +84,7 @@ __decorate([
 ], PayrollController.prototype, "getPayPeriod", null);
 __decorate([
     (0, common_1.Post)('timesheets/:timeEntryId/approve'),
-    (0, roles_decorator_1.Roles)('admin', 'hr', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('timeEntryId')),
     __param(2, (0, common_1.Body)()),
@@ -112,7 +112,7 @@ __decorate([
 ], PayrollController.prototype, "calculatePayroll", null);
 __decorate([
     (0, common_1.Post)('pay-periods/:id/export'),
-    (0, roles_decorator_1.Roles)('admin'),
+    (0, roles_decorator_1.Roles)('admin', 'hr'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __param(2, (0, common_1.Body)()),

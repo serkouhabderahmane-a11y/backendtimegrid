@@ -20,6 +20,8 @@ const email_service_1 = require("./modules/email/email.service");
 const payroll_module_1 = require("./modules/payroll/payroll.module");
 const daily_notes_module_1 = require("./modules/daily-notes/daily-notes.module");
 const mar_module_1 = require("./modules/mar/mar.module");
+const social_feed_module_1 = require("./modules/social-feed/social-feed.module");
+const chat_module_1 = require("./modules/chat/chat.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -36,6 +38,8 @@ exports.AppModule = AppModule = __decorate([
             payroll_module_1.PayrollModule,
             daily_notes_module_1.DailyNotesModule,
             mar_module_1.MarModule,
+            social_feed_module_1.SocialFeedModule,
+            chat_module_1.ChatModule,
         ],
         providers: [audit_logger_service_1.AuditLogger, email_service_1.EmailService],
     })

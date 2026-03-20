@@ -36,7 +36,7 @@ export class PayrollController {
   }
 
   @Post('timesheets/:timeEntryId/approve')
-  @Roles('admin', 'hr', 'manager')
+  @Roles('admin', 'manager')
   async approveTimesheet(
     @Request() req,
     @Param('timeEntryId') timeEntryId: string,
@@ -66,7 +66,7 @@ export class PayrollController {
   }
 
   @Post('pay-periods/:id/export')
-  @Roles('admin')
+  @Roles('admin', 'hr')
   async exportPayroll(
     @Request() req,
     @Param('id') id: string,
