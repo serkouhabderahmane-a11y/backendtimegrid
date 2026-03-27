@@ -10,11 +10,19 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaService = void 0;
+require("dotenv/config");
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 let PrismaService = class PrismaService extends client_1.PrismaClient {
     constructor() {
-        super({});
+        const datasourceUrl = process.env.DATABASE_URL;
+        super({
+            datasources: {
+                db: {
+                    url: datasourceUrl,
+                },
+            },
+        });
     }
     async onModuleInit() {
         await this.$connect();

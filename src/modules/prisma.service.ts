@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Global, Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
@@ -5,7 +6,14 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    super({});
+    const datasourceUrl = process.env.DATABASE_URL;
+    super({
+      datasources: {
+        db: {
+          url: datasourceUrl,
+        },
+      },
+    });
   }
 
   async onModuleInit() {

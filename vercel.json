@@ -14,7 +14,15 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "DATABASE_URL": "file:./prod.db",
+    "SEED_DEMO": "true",
+    "JWT_SECRET": "timegrid-prod-secret-key-2024",
+    "DEMO_EMAIL": "demo@timegrid.app",
+    "DEMO_PASSWORD": "demo123",
+    "DEMO_HR_EMAIL": "hr@timegrid.app",
+    "DEMO_HR_PASSWORD": "hr123",
+    "FRONTEND_URL": "https://timegrid-frontend.vercel.app"
   },
   "regions": ["iad1"],
   "installCommand": "npm install",
