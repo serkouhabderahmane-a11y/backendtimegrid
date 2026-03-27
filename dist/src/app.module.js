@@ -27,6 +27,7 @@ const patients_module_1 = require("./modules/patients/patients.module");
 const time_off_module_1 = require("./modules/time-off/time-off.module");
 const holidays_module_1 = require("./modules/holidays/holidays.module");
 const sharing_module_1 = require("./modules/sharing/sharing.module");
+const seed_module_1 = require("./modules/seed/seed.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -50,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
             time_off_module_1.TimeOffModule,
             holidays_module_1.HolidaysModule,
             sharing_module_1.SharingModule,
+            seed_module_1.SeedModule,
         ],
         providers: [audit_logger_service_1.AuditLogger, email_service_1.EmailService],
     })

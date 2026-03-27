@@ -23,6 +23,28 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
+    getDemoCredentials() {
+        return {
+            demo: true,
+            accounts: [
+                {
+                    role: 'admin',
+                    email: process.env.DEMO_EMAIL || 'demo@timegrid.app',
+                    passwordHint: 'Use environment variable DEMO_PASSWORD or default: demo123',
+                },
+                {
+                    role: 'hr',
+                    email: process.env.DEMO_HR_EMAIL || 'hr@timegrid.app',
+                    passwordHint: 'Use environment variable DEMO_HR_PASSWORD or default: hr123',
+                },
+                {
+                    role: 'employee',
+                    email: process.env.DEMO_EMPLOYEE_EMAIL || 'employee@timegrid.app',
+                    passwordHint: 'Use environment variable DEMO_EMPLOYEE_PASSWORD or default: employee123',
+                },
+            ],
+        };
+    }
     async register(tenantId, dto) {
         return this.authService.register(dto, tenantId);
     }
@@ -37,6 +59,12 @@ let AuthController = class AuthController {
     }
 };
 exports.AuthController = AuthController;
+__decorate([
+    (0, common_1.Get)('demo'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "getDemoCredentials", null);
 __decorate([
     (0, common_1.Post)('tenants/:tenantId/register'),
     __param(0, (0, common_1.Param)('tenantId')),

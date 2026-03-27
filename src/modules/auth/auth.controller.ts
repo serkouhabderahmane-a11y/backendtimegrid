@@ -8,6 +8,30 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get('demo')
+  getDemoCredentials() {
+    return {
+      demo: true,
+      accounts: [
+        {
+          role: 'admin',
+          email: process.env.DEMO_EMAIL || 'demo@timegrid.app',
+          passwordHint: 'Use environment variable DEMO_PASSWORD or default: demo123',
+        },
+        {
+          role: 'hr',
+          email: process.env.DEMO_HR_EMAIL || 'hr@timegrid.app',
+          passwordHint: 'Use environment variable DEMO_HR_PASSWORD or default: hr123',
+        },
+        {
+          role: 'employee',
+          email: process.env.DEMO_EMPLOYEE_EMAIL || 'employee@timegrid.app',
+          passwordHint: 'Use environment variable DEMO_EMPLOYEE_PASSWORD or default: employee123',
+        },
+      ],
+    };
+  }
+
   @Post('tenants/:tenantId/register')
   async register(@Param('tenantId') tenantId: string, @Body() dto: CreateUserDto) {
     return this.authService.register(dto, tenantId);

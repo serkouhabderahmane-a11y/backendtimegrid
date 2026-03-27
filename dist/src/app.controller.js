@@ -17,8 +17,21 @@ let AppController = class AppController {
     constructor(appService) {
         this.appService = appService;
     }
-    getHello() {
-        return this.appService.getHello();
+    health() {
+        return {
+            status: 'ok',
+            service: 'timegrid-backend',
+            version: '1.0.0',
+            env: process.env.NODE_ENV || 'development',
+            timestamp: new Date().toISOString(),
+        };
+    }
+    healthCheck() {
+        return {
+            status: 'healthy',
+            uptime: process.uptime(),
+            memory: process.memoryUsage(),
+        };
     }
 };
 exports.AppController = AppController;
@@ -26,8 +39,14 @@ __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", String)
-], AppController.prototype, "getHello", null);
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "health", null);
+__decorate([
+    (0, common_1.Get)('health'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "healthCheck", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [app_service_1.AppService])

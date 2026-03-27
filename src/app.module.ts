@@ -18,6 +18,7 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { TimeOffModule } from './modules/time-off/time-off.module';
 import { HolidaysModule } from './modules/holidays/holidays.module';
 import { SharingModule } from './modules/sharing/sharing.module';
+import { SeedModule } from './modules/seed/seed.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SharingModule } from './modules/sharing/sharing.module';
     TimeOffModule,
     HolidaysModule,
     SharingModule,
+    SeedModule,
   ],
   providers: [AuditLogger, EmailService],
 })

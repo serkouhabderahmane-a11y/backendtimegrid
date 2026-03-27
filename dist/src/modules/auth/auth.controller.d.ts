@@ -4,6 +4,14 @@ import { LoginDto } from './dto/login.dto';
 export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
+    getDemoCredentials(): {
+        demo: boolean;
+        accounts: {
+            role: string;
+            email: string;
+            passwordHint: string;
+        }[];
+    };
     register(tenantId: string, dto: CreateUserDto): Promise<{
         accessToken: string;
         refreshToken: string;

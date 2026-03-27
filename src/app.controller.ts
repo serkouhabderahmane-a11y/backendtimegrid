@@ -6,7 +6,22 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  health() {
+    return {
+      status: 'ok',
+      service: 'timegrid-backend',
+      version: '1.0.0',
+      env: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('health')
+  healthCheck() {
+    return {
+      status: 'healthy',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+    };
   }
 }
