@@ -22,6 +22,10 @@ const daily_notes_module_1 = require("./modules/daily-notes/daily-notes.module")
 const mar_module_1 = require("./modules/mar/mar.module");
 const social_feed_module_1 = require("./modules/social-feed/social-feed.module");
 const chat_module_1 = require("./modules/chat/chat.module");
+const attendance_module_1 = require("./modules/attendance/attendance.module");
+const patients_module_1 = require("./modules/patients/patients.module");
+const time_off_module_1 = require("./modules/time-off/time-off.module");
+const holidays_module_1 = require("./modules/holidays/holidays.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +44,10 @@ exports.AppModule = AppModule = __decorate([
             mar_module_1.MarModule,
             social_feed_module_1.SocialFeedModule,
             chat_module_1.ChatModule,
+            attendance_module_1.AttendanceModule,
+            patients_module_1.PatientsModule,
+            time_off_module_1.TimeOffModule,
+            holidays_module_1.HolidaysModule,
         ],
         providers: [audit_logger_service_1.AuditLogger, email_service_1.EmailService],
     })

@@ -79,11 +79,11 @@ export declare class CandidatesController {
             type: string;
             expiresAt: Date | null;
             candidateId: string | null;
+            employeeId: string | null;
             fileUrl: string;
             fileSize: number | null;
             mimeType: string | null;
             uploadedAt: Date;
-            employeeId: string | null;
         }[];
         location: {
             id: string;

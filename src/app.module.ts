@@ -13,6 +13,10 @@ import { DailyNotesModule } from './modules/daily-notes/daily-notes.module';
 import { MarModule } from './modules/mar/mar.module';
 import { SocialFeedModule } from './modules/social-feed/social-feed.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
+import { PatientsModule } from './modules/patients/patients.module';
+import { TimeOffModule } from './modules/time-off/time-off.module';
+import { HolidaysModule } from './modules/holidays/holidays.module';
 
 @Module({
   imports: [
@@ -28,6 +32,10 @@ import { ChatModule } from './modules/chat/chat.module';
     MarModule,
     SocialFeedModule,
     ChatModule,
+    AttendanceModule,
+    PatientsModule,
+    TimeOffModule,
+    HolidaysModule,
   ],
   providers: [AuditLogger, EmailService],
 })

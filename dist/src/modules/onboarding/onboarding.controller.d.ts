@@ -145,11 +145,11 @@ export declare class OnboardingController {
             type: string;
             expiresAt: Date | null;
             candidateId: string | null;
+            employeeId: string | null;
             fileUrl: string;
             fileSize: number | null;
             mimeType: string | null;
             uploadedAt: Date;
-            employeeId: string | null;
         }[];
     }>;
     updateTrainingProgress(onboardingId: string, tenantId: string, watchProgress: number): Promise<{

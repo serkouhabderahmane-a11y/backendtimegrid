@@ -230,11 +230,11 @@ export declare class HrDashboardService {
         type: string;
         expiresAt: Date | null;
         candidateId: string | null;
+        employeeId: string | null;
         fileUrl: string;
         fileSize: number | null;
         mimeType: string | null;
         uploadedAt: Date;
-        employeeId: string | null;
     })[]>;
     getExpiringDocuments(tenantId: string, daysAhead?: number): Promise<({
         candidate: {
@@ -263,10 +263,10 @@ export declare class HrDashboardService {
         type: string;
         expiresAt: Date | null;
         candidateId: string | null;
+        employeeId: string | null;
         fileUrl: string;
         fileSize: number | null;
         mimeType: string | null;
         uploadedAt: Date;
-        employeeId: string | null;
     })[]>;
 }
