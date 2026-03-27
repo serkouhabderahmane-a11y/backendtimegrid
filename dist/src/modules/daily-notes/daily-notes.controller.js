@@ -32,9 +32,24 @@ let DailyNotesController = class DailyNotesController {
     }
     async createNote(req, body) {
         const userContext = this.getUserContext(req);
-        return this.dailyNotesService.createNote(req.user.tenantId, req.user.id, body.employeeId, {
-            ...body,
+        const employeeId = body.employeeId || userContext.employeeId;
+        if (!employeeId) {
+            throw new Error('Employee ID is required');
+        }
+        return this.dailyNotesService.createNote(req.user.tenantId, req.user.id, employeeId, {
+            content: body.content,
             date: new Date(body.date),
+            attachments: body.attachments,
+            participantId: body.participantId,
+        }, userContext);
+    }
+    async updateNote(req, id, body) {
+        const userContext = this.getUserContext(req);
+        return this.dailyNotesService.updateNote(req.user.tenantId, req.user.id, id, {
+            content: body.content,
+            date: body.date ? new Date(body.date) : undefined,
+            attachments: body.attachments,
+            participantId: body.participantId,
         }, userContext);
     }
     async submitNote(req, id) {
@@ -78,6 +93,15 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DailyNotesController.prototype, "createNote", null);
 __decorate([
+    (0, common_1.Put)(':id'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], DailyNotesController.prototype, "updateNote", null);
+__decorate([
     (0, common_1.Post)(':id/submit'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
@@ -107,7 +131,7 @@ __decorate([
 ], DailyNotesController.prototype, "getNote", null);
 __decorate([
     (0, common_1.Post)(':id/review'),
-    (0, roles_decorator_1.Roles)('admin', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager', 'supervisor'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -116,7 +140,7 @@ __decorate([
 ], DailyNotesController.prototype, "reviewNote", null);
 __decorate([
     (0, common_1.Post)(':id/lock'),
-    (0, roles_decorator_1.Roles)('admin', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager', 'supervisor'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -125,7 +149,7 @@ __decorate([
 ], DailyNotesController.prototype, "lockNote", null);
 __decorate([
     (0, common_1.Post)('export'),
-    (0, roles_decorator_1.Roles)('admin', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager', 'supervisor'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

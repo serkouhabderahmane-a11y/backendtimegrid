@@ -30,10 +30,16 @@ let MarService = class MarService {
         });
     }
     canAccessMar(userContext) {
-        if (userContext.role === 'hr') {
-            return false;
-        }
-        return true;
+        const allowedRoles = ['admin', 'manager', 'supervisor', 'employee'];
+        return allowedRoles.includes(userContext.role);
+    }
+    canEditMar(userContext) {
+        const editorRoles = ['admin', 'manager', 'supervisor'];
+        return editorRoles.includes(userContext.role);
+    }
+    canRecordOutcome(userContext) {
+        const allowedRoles = ['admin', 'manager', 'supervisor', 'nurse', 'med_tech'];
+        return allowedRoles.includes(userContext.role);
     }
     filterByAccess(userContext, baseWhere) {
         if (userContext.role === 'employee' && userContext.employeeId) {
@@ -43,7 +49,10 @@ let MarService = class MarService {
     }
     async createMarEntry(tenantId, userId, employeeId, data, userContext) {
         if (!this.canAccessMar(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+            throw new common_1.ForbiddenException('You do not have permission to access MAR records');
+        }
+        if (userContext.role === 'employee' && userContext.employeeId !== employeeId) {
+            throw new common_1.ForbiddenException('Employees can only create MAR records for themselves');
         }
         const employee = await this.prisma.employee.findFirst({
             where: { id: employeeId, tenantId },
@@ -51,7 +60,7 @@ let MarService = class MarService {
         if (!employee) {
             throw new common_1.NotFoundException('Employee not found');
         }
-        return this.prisma.medicationAdministrationRecord.create({
+        const created = await this.prisma.medicationAdministrationRecord.create({
             data: {
                 tenantId,
                 employeeId,
@@ -61,10 +70,12 @@ let MarService = class MarService {
                 participantId: data.participantId,
             },
         });
+        await this.logAudit(tenantId, userId, 'CREATE_MAR_ENTRY', 'MedicationAdministrationRecord', created.id);
+        return created;
     }
     async recordOutcome(tenantId, userId, id, data, userContext) {
         if (!this.canAccessMar(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+            throw new common_1.ForbiddenException('You do not have permission to access MAR records');
         }
         const entry = await this.prisma.medicationAdministrationRecord.findFirst({
             where: { id, tenantId },
@@ -109,8 +120,8 @@ let MarService = class MarService {
         });
     }
     async lockEntry(tenantId, userId, id, userContext) {
-        if (!this.canAccessMar(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+        if (!this.canEditMar(userContext)) {
+            throw new common_1.ForbiddenException('You do not have permission to lock MAR records');
         }
         const entry = await this.prisma.medicationAdministrationRecord.findFirst({
             where: { id, tenantId },
@@ -136,7 +147,7 @@ let MarService = class MarService {
     }
     async getMarEntries(tenantId, userId, params, userContext) {
         if (!this.canAccessMar(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+            throw new common_1.ForbiddenException('You do not have permission to access MAR records');
         }
         const where = this.filterByAccess(userContext, { tenantId });
         if (params.employeeId)
@@ -160,7 +171,7 @@ let MarService = class MarService {
     }
     async getMarEntry(tenantId, id, userContext) {
         if (!this.canAccessMar(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+            throw new common_1.ForbiddenException('You do not have permission to access MAR records');
         }
         const entry = await this.prisma.medicationAdministrationRecord.findFirst({
             where: { id, tenantId },
@@ -180,7 +191,7 @@ let MarService = class MarService {
     }
     async exportMarEntries(tenantId, userId, startDate, endDate, params, userContext) {
         if (userContext && !this.canAccessMar(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access MAR records');
+            throw new common_1.ForbiddenException('You do not have permission to export MAR records');
         }
         const where = {
             tenantId,
@@ -220,6 +231,7 @@ let MarService = class MarService {
         await this.logAudit(tenantId, userId, 'EXPORT_MAR', 'MedicationAdministrationRecord', undefined, {
             startDate,
             endDate,
+            participantId: params?.participantId,
             entriesCount: entries.length,
         });
         return {

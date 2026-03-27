@@ -78,7 +78,7 @@ export declare class OnboardingController {
             lastName: string;
             email: string;
         };
-        currentStep: import("./onboarding.service").OnboardingStep;
+        currentStep: import("./onboarding.service").OnboardingStep.PERSONAL_INFO | import("./onboarding.service").OnboardingStep.OFFER_LETTER | import("./onboarding.service").OnboardingStep.DOCUMENT_UPLOAD | import("./onboarding.service").OnboardingStep.TRAINING_VIDEO | import("./onboarding.service").OnboardingStep.SIGNATURE | import("./onboarding.service").OnboardingStep.COMPLETE;
         steps: {
             status: any;
             step: import("./onboarding.service").OnboardingStep;

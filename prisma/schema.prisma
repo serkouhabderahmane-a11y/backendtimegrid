@@ -31,6 +31,7 @@ enum TaskType {
   training_acknowledgment
   e_signature
   role_confirmation
+  background_check
 }
 
 enum EmploymentType {
@@ -80,6 +81,7 @@ model Tenant {
   timeOffLogs        TimeOffLog[]
   holidays           Holiday[]
   appointments       Appointment[]
+  sharedLinks        SharedLink[]
 }
 
 model User {
@@ -988,4 +990,21 @@ model HolidayAssignment {
   @@index([holidayId])
   @@index([departmentId])
   @@index([locationId])
+}
+
+model SharedLink {
+  id          String   @id @default(uuid())
+  tenantId    String
+  entityType  String
+  entityId    String
+  token       String   @unique
+  expiresAt   DateTime
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([token])
+  @@index([expiresAt])
 }

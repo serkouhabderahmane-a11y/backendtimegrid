@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Request, Query } from '@nestjs/common';
 import { DailyNotesService, UserContext } from './daily-notes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -21,7 +21,7 @@ export class DailyNotesController {
   async createNote(
     @Request() req,
     @Body() body: { 
-      employeeId: string; 
+      employeeId?: string;
       date: string; 
       content: string; 
       attachments?: string[];
@@ -29,9 +29,35 @@ export class DailyNotesController {
     },
   ) {
     const userContext = this.getUserContext(req);
-    return this.dailyNotesService.createNote(req.user.tenantId, req.user.id, body.employeeId, {
-      ...body,
+    const employeeId = body.employeeId || userContext.employeeId;
+    if (!employeeId) {
+      throw new Error('Employee ID is required');
+    }
+    return this.dailyNotesService.createNote(req.user.tenantId, req.user.id, employeeId, {
+      content: body.content,
       date: new Date(body.date),
+      attachments: body.attachments,
+      participantId: body.participantId,
+    }, userContext);
+  }
+
+  @Put(':id')
+  async updateNote(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() body: { 
+      content?: string; 
+      date?: string;
+      attachments?: string[];
+      participantId?: string;
+    },
+  ) {
+    const userContext = this.getUserContext(req);
+    return this.dailyNotesService.updateNote(req.user.tenantId, req.user.id, id, {
+      content: body.content,
+      date: body.date ? new Date(body.date) : undefined,
+      attachments: body.attachments,
+      participantId: body.participantId,
     }, userContext);
   }
 
@@ -67,21 +93,21 @@ export class DailyNotesController {
   }
 
   @Post(':id/review')
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'supervisor')
   async reviewNote(@Request() req, @Param('id') id: string) {
     const userContext = this.getUserContext(req);
     return this.dailyNotesService.reviewNote(req.user.tenantId, req.user.id, id, userContext);
   }
 
   @Post(':id/lock')
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'supervisor')
   async lockNote(@Request() req, @Param('id') id: string) {
     const userContext = this.getUserContext(req);
     return this.dailyNotesService.lockNote(req.user.tenantId, req.user.id, id, userContext);
   }
 
   @Post('export')
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'supervisor')
   async exportNotes(
     @Request() req,
     @Body() body: { startDate: string; endDate: string; participantId?: string },

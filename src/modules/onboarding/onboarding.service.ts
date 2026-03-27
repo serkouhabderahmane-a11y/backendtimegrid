@@ -7,6 +7,7 @@ import { EmailService } from '../email/email.service';
 export enum OnboardingStep {
   PERSONAL_INFO = 'personal_info',
   OFFER_LETTER = 'offer_letter',
+  BACKGROUND_CHECK = 'background_check',
   DOCUMENT_UPLOAD = 'document_upload',
   TRAINING_VIDEO = 'training_video',
   SIGNATURE = 'signature',

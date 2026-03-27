@@ -5,6 +5,7 @@ import { EmailService } from '../email/email.service';
 export declare enum OnboardingStep {
     PERSONAL_INFO = "personal_info",
     OFFER_LETTER = "offer_letter",
+    BACKGROUND_CHECK = "background_check",
     DOCUMENT_UPLOAD = "document_upload",
     TRAINING_VIDEO = "training_video",
     SIGNATURE = "signature",
@@ -218,7 +219,7 @@ export declare class OnboardingService {
             lastName: string;
             email: string;
         };
-        currentStep: OnboardingStep;
+        currentStep: OnboardingStep.PERSONAL_INFO | OnboardingStep.OFFER_LETTER | OnboardingStep.DOCUMENT_UPLOAD | OnboardingStep.TRAINING_VIDEO | OnboardingStep.SIGNATURE | OnboardingStep.COMPLETE;
         steps: {
             status: any;
             step: OnboardingStep;

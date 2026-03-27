@@ -9,7 +9,9 @@ export declare class DailyNotesService {
     constructor(prisma: PrismaService);
     private logAudit;
     private canAccessNotes;
+    private canEditNote;
     private filterByAccess;
+    private canReviewOrLock;
     createNote(tenantId: string, userId: string, employeeId: string, data: {
         date: Date;
         content: string;
@@ -32,6 +34,27 @@ export declare class DailyNotesService {
         reviewedBy: string | null;
     }>;
     submitNote(tenantId: string, userId: string, id: string, userContext: UserContext): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        content: string;
+        status: import("@prisma/client").$Enums.DailyNoteStatus;
+        reviewedAt: Date | null;
+        employeeId: string;
+        lockedAt: Date | null;
+        lockedBy: string | null;
+        participantId: string | null;
+        date: Date;
+        attachments: string;
+        reviewedBy: string | null;
+    }>;
+    updateNote(tenantId: string, userId: string, id: string, data: {
+        content?: string;
+        date?: Date;
+        participantId?: string;
+        attachments?: string[];
+    }, userContext: UserContext): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;

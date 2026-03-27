@@ -20,6 +20,7 @@ var OnboardingStep;
 (function (OnboardingStep) {
     OnboardingStep["PERSONAL_INFO"] = "personal_info";
     OnboardingStep["OFFER_LETTER"] = "offer_letter";
+    OnboardingStep["BACKGROUND_CHECK"] = "background_check";
     OnboardingStep["DOCUMENT_UPLOAD"] = "document_upload";
     OnboardingStep["TRAINING_VIDEO"] = "training_video";
     OnboardingStep["SIGNATURE"] = "signature";

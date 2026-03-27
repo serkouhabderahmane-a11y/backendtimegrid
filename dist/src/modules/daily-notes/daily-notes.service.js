@@ -30,10 +30,12 @@ let DailyNotesService = class DailyNotesService {
         });
     }
     canAccessNotes(userContext) {
-        if (userContext.role === 'hr') {
-            return false;
-        }
-        return true;
+        const allowedRoles = ['admin', 'manager', 'supervisor', 'employee'];
+        return allowedRoles.includes(userContext.role);
+    }
+    canEditNote(userContext) {
+        const editorRoles = ['admin', 'manager', 'supervisor'];
+        return editorRoles.includes(userContext.role);
     }
     filterByAccess(userContext, baseWhere) {
         if (userContext.role === 'employee' && userContext.employeeId) {
@@ -41,9 +43,16 @@ let DailyNotesService = class DailyNotesService {
         }
         return baseWhere;
     }
+    canReviewOrLock(userContext) {
+        const reviewerRoles = ['admin', 'manager', 'supervisor'];
+        return reviewerRoles.includes(userContext.role);
+    }
     async createNote(tenantId, userId, employeeId, data, userContext) {
         if (!this.canAccessNotes(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+            throw new common_1.ForbiddenException('You do not have permission to access Daily Notes');
+        }
+        if (userContext.role === 'employee' && userContext.employeeId !== employeeId) {
+            throw new common_1.ForbiddenException('Employees can only create notes for themselves');
         }
         const employee = await this.prisma.employee.findFirst({
             where: { id: employeeId, tenantId },
@@ -64,6 +73,9 @@ let DailyNotesService = class DailyNotesService {
             if (existingNote.status === 'locked') {
                 throw new common_1.ForbiddenException('Cannot edit locked note');
             }
+            if (userContext.role === 'employee' && existingNote.employeeId !== userContext.employeeId) {
+                throw new common_1.ForbiddenException('You can only edit your own notes');
+            }
             const updated = await this.prisma.dailyNote.update({
                 where: { id: existingNote.id },
                 data: {
@@ -73,9 +85,12 @@ let DailyNotesService = class DailyNotesService {
                     participantId: data.participantId,
                 },
             });
+            await this.logAudit(tenantId, userId, 'EDIT_DAILY_NOTE', 'DailyNote', existingNote.id, {
+                editedBy: userContext.role,
+            });
             return updated;
         }
-        return this.prisma.dailyNote.create({
+        const created = await this.prisma.dailyNote.create({
             data: {
                 tenantId,
                 employeeId,
@@ -86,10 +101,12 @@ let DailyNotesService = class DailyNotesService {
                 participantId: data.participantId,
             },
         });
+        await this.logAudit(tenantId, userId, 'CREATE_DAILY_NOTE', 'DailyNote', created.id);
+        return created;
     }
     async submitNote(tenantId, userId, id, userContext) {
         if (!this.canAccessNotes(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+            throw new common_1.ForbiddenException('You do not have permission to access Daily Notes');
         }
         const note = await this.prisma.dailyNote.findFirst({
             where: { id, tenantId },
@@ -108,6 +125,43 @@ let DailyNotesService = class DailyNotesService {
             data: { status: 'submitted' },
         });
         await this.logAudit(tenantId, userId, 'SUBMIT_DAILY_NOTE', 'DailyNote', id);
+        return updated;
+    }
+    async updateNote(tenantId, userId, id, data, userContext) {
+        if (!this.canAccessNotes(userContext)) {
+            throw new common_1.ForbiddenException('You do not have permission to access Daily Notes');
+        }
+        const note = await this.prisma.dailyNote.findFirst({
+            where: { id, tenantId },
+        });
+        if (!note) {
+            throw new common_1.NotFoundException('Note not found');
+        }
+        if (note.status === 'locked') {
+            throw new common_1.ForbiddenException('Cannot edit locked note');
+        }
+        if (userContext.role === 'employee' && userContext.employeeId !== note.employeeId) {
+            throw new common_1.ForbiddenException('You can only edit your own notes');
+        }
+        const updateData = {};
+        if (data.content !== undefined)
+            updateData.content = data.content;
+        if (data.participantId !== undefined)
+            updateData.participantId = data.participantId;
+        if (data.attachments !== undefined)
+            updateData.attachments = JSON.stringify(data.attachments);
+        if (data.date !== undefined) {
+            const dateStart = new Date(data.date);
+            dateStart.setHours(0, 0, 0, 0);
+            updateData.date = dateStart;
+        }
+        const updated = await this.prisma.dailyNote.update({
+            where: { id },
+            data: updateData,
+        });
+        await this.logAudit(tenantId, userId, 'UPDATE_DAILY_NOTE', 'DailyNote', id, {
+            editedBy: userContext.role,
+        });
         return updated;
     }
     async getNotes(tenantId, userId, params, userContext) {
@@ -155,8 +209,8 @@ let DailyNotesService = class DailyNotesService {
         return note;
     }
     async reviewNote(tenantId, userId, id, userContext) {
-        if (!this.canAccessNotes(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        if (!this.canReviewOrLock(userContext)) {
+            throw new common_1.ForbiddenException('You do not have permission to review notes');
         }
         const note = await this.prisma.dailyNote.findFirst({
             where: { id, tenantId },
@@ -178,8 +232,8 @@ let DailyNotesService = class DailyNotesService {
         return updated;
     }
     async lockNote(tenantId, userId, id, userContext) {
-        if (!this.canAccessNotes(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+        if (!this.canReviewOrLock(userContext)) {
+            throw new common_1.ForbiddenException('You do not have permission to lock notes');
         }
         const note = await this.prisma.dailyNote.findFirst({
             where: { id, tenantId },
@@ -205,7 +259,7 @@ let DailyNotesService = class DailyNotesService {
     }
     async exportNotes(tenantId, userId, startDate, endDate, params, userContext) {
         if (userContext && !this.canAccessNotes(userContext)) {
-            throw new common_1.ForbiddenException('HR role cannot access Daily Notes');
+            throw new common_1.ForbiddenException('You do not have permission to export Daily Notes');
         }
         const where = {
             tenantId,
@@ -245,6 +299,7 @@ let DailyNotesService = class DailyNotesService {
         await this.logAudit(tenantId, userId, 'EXPORT_DAILY_NOTES', 'DailyNote', undefined, {
             startDate,
             endDate,
+            participantId: params?.participantId,
             notesCount: notes.length,
         });
         return {

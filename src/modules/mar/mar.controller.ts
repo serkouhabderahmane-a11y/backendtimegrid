@@ -49,7 +49,7 @@ export class MarController {
   }
 
   @Post(':id/lock')
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'supervisor')
   async lockEntry(@Request() req, @Param('id') id: string) {
     const userContext = this.getUserContext(req);
     return this.marService.lockEntry(req.user.tenantId, req.user.id, id, userContext);
@@ -81,7 +81,7 @@ export class MarController {
   }
 
   @Post('export')
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'supervisor')
   async exportMarEntries(
     @Request() req,
     @Body() body: { 

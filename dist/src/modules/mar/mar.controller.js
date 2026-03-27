@@ -88,7 +88,7 @@ __decorate([
 ], MarController.prototype, "recordOutcome", null);
 __decorate([
     (0, common_1.Post)(':id/lock'),
-    (0, roles_decorator_1.Roles)('admin', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager', 'supervisor'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -117,7 +117,7 @@ __decorate([
 ], MarController.prototype, "getMarEntry", null);
 __decorate([
     (0, common_1.Post)('export'),
-    (0, roles_decorator_1.Roles)('admin', 'manager'),
+    (0, roles_decorator_1.Roles)('admin', 'manager', 'supervisor'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

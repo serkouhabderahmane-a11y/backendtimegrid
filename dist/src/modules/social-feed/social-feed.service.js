@@ -59,7 +59,7 @@ let SocialFeedService = class SocialFeedService {
         if (!post) {
             throw new common_1.NotFoundException('Post not found');
         }
-        if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr') {
+        if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr' && userRole !== 'manager' && userRole !== 'supervisor') {
             throw new common_1.ForbiddenException('You can only edit your own posts');
         }
         return this.prisma.post.update({
@@ -79,7 +79,7 @@ let SocialFeedService = class SocialFeedService {
         if (!post) {
             throw new common_1.NotFoundException('Post not found');
         }
-        if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr') {
+        if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr' && userRole !== 'manager' && userRole !== 'supervisor') {
             throw new common_1.ForbiddenException('You can only delete your own posts');
         }
         await this.prisma.post.delete({ where: { id: postId } });
@@ -125,7 +125,7 @@ let SocialFeedService = class SocialFeedService {
         if (!comment) {
             throw new common_1.NotFoundException('Comment not found');
         }
-        if (comment.userId !== userId && userRole !== 'admin' && userRole !== 'hr') {
+        if (comment.userId !== userId && userRole !== 'admin' && userRole !== 'hr' && userRole !== 'manager' && userRole !== 'supervisor') {
             throw new common_1.ForbiddenException('You can only delete your own comments');
         }
         await this.prisma.postComment.delete({ where: { id: commentId } });

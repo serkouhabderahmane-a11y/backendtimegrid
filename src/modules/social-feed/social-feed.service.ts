@@ -51,7 +51,7 @@ export class SocialFeedService {
       throw new NotFoundException('Post not found');
     }
 
-    if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr') {
+    if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr' && userRole !== 'manager' && userRole !== 'supervisor') {
       throw new ForbiddenException('You can only edit your own posts');
     }
 
@@ -75,7 +75,7 @@ export class SocialFeedService {
       throw new NotFoundException('Post not found');
     }
 
-    if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr') {
+    if (post.authorId !== userId && userRole !== 'admin' && userRole !== 'hr' && userRole !== 'manager' && userRole !== 'supervisor') {
       throw new ForbiddenException('You can only delete your own posts');
     }
 
@@ -132,7 +132,7 @@ export class SocialFeedService {
       throw new NotFoundException('Comment not found');
     }
 
-    if (comment.userId !== userId && userRole !== 'admin' && userRole !== 'hr') {
+    if (comment.userId !== userId && userRole !== 'admin' && userRole !== 'hr' && userRole !== 'manager' && userRole !== 'supervisor') {
       throw new ForbiddenException('You can only delete your own comments');
     }
 

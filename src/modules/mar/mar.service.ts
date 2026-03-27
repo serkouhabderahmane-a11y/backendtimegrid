@@ -32,10 +32,18 @@ export class MarService {
   }
 
   private canAccessMar(userContext: UserContext): boolean {
-    if (userContext.role === 'hr') {
-      return false;
-    }
-    return true;
+    const allowedRoles = ['admin', 'manager', 'supervisor', 'employee'];
+    return allowedRoles.includes(userContext.role);
+  }
+
+  private canEditMar(userContext: UserContext): boolean {
+    const editorRoles = ['admin', 'manager', 'supervisor'];
+    return editorRoles.includes(userContext.role);
+  }
+
+  private canRecordOutcome(userContext: UserContext): boolean {
+    const allowedRoles = ['admin', 'manager', 'supervisor', 'nurse', 'med_tech'];
+    return allowedRoles.includes(userContext.role);
   }
 
   private filterByAccess(userContext: UserContext, baseWhere: any): any {
@@ -57,7 +65,11 @@ export class MarService {
     userContext: UserContext
   ) {
     if (!this.canAccessMar(userContext)) {
-      throw new ForbiddenException('HR role cannot access MAR records');
+      throw new ForbiddenException('You do not have permission to access MAR records');
+    }
+
+    if (userContext.role === 'employee' && userContext.employeeId !== employeeId) {
+      throw new ForbiddenException('Employees can only create MAR records for themselves');
     }
 
     const employee = await this.prisma.employee.findFirst({
@@ -68,7 +80,7 @@ export class MarService {
       throw new NotFoundException('Employee not found');
     }
 
-    return this.prisma.medicationAdministrationRecord.create({
+    const created = await this.prisma.medicationAdministrationRecord.create({
       data: {
         tenantId,
         employeeId,
@@ -78,6 +90,10 @@ export class MarService {
         participantId: data.participantId,
       },
     });
+
+    await this.logAudit(tenantId, userId, 'CREATE_MAR_ENTRY', 'MedicationAdministrationRecord', created.id);
+
+    return created;
   }
 
   async recordOutcome(
@@ -92,7 +108,7 @@ export class MarService {
     userContext: UserContext
   ) {
     if (!this.canAccessMar(userContext)) {
-      throw new ForbiddenException('HR role cannot access MAR records');
+      throw new ForbiddenException('You do not have permission to access MAR records');
     }
 
     const entry = await this.prisma.medicationAdministrationRecord.findFirst({
@@ -148,8 +164,8 @@ export class MarService {
   }
 
   async lockEntry(tenantId: string, userId: string, id: string, userContext: UserContext) {
-    if (!this.canAccessMar(userContext)) {
-      throw new ForbiddenException('HR role cannot access MAR records');
+    if (!this.canEditMar(userContext)) {
+      throw new ForbiddenException('You do not have permission to lock MAR records');
     }
 
     const entry = await this.prisma.medicationAdministrationRecord.findFirst({
@@ -193,7 +209,7 @@ export class MarService {
     userContext: UserContext
   ) {
     if (!this.canAccessMar(userContext)) {
-      throw new ForbiddenException('HR role cannot access MAR records');
+      throw new ForbiddenException('You do not have permission to access MAR records');
     }
 
     const where: any = this.filterByAccess(userContext, { tenantId });
@@ -218,7 +234,7 @@ export class MarService {
 
   async getMarEntry(tenantId: string, id: string, userContext: UserContext) {
     if (!this.canAccessMar(userContext)) {
-      throw new ForbiddenException('HR role cannot access MAR records');
+      throw new ForbiddenException('You do not have permission to access MAR records');
     }
 
     const entry = await this.prisma.medicationAdministrationRecord.findFirst({
@@ -250,7 +266,7 @@ export class MarService {
     userContext?: UserContext
   ) {
     if (userContext && !this.canAccessMar(userContext)) {
-      throw new ForbiddenException('HR role cannot access MAR records');
+      throw new ForbiddenException('You do not have permission to export MAR records');
     }
 
     const where: any = {
@@ -294,6 +310,7 @@ export class MarService {
     await this.logAudit(tenantId, userId, 'EXPORT_MAR', 'MedicationAdministrationRecord', undefined, {
       startDate,
       endDate,
+      participantId: params?.participantId,
       entriesCount: entries.length,
     });
 

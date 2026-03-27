@@ -17,6 +17,7 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
 import { PatientsModule } from './modules/patients/patients.module';
 import { TimeOffModule } from './modules/time-off/time-off.module';
 import { HolidaysModule } from './modules/holidays/holidays.module';
+import { SharingModule } from './modules/sharing/sharing.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { HolidaysModule } from './modules/holidays/holidays.module';
     PatientsModule,
     TimeOffModule,
     HolidaysModule,
+    SharingModule,
   ],
   providers: [AuditLogger, EmailService],
 })

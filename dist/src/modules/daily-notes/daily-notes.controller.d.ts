@@ -4,9 +4,30 @@ export declare class DailyNotesController {
     constructor(dailyNotesService: DailyNotesService);
     private getUserContext;
     createNote(req: any, body: {
-        employeeId: string;
+        employeeId?: string;
         date: string;
         content: string;
+        attachments?: string[];
+        participantId?: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        content: string;
+        status: import("@prisma/client").$Enums.DailyNoteStatus;
+        reviewedAt: Date | null;
+        employeeId: string;
+        lockedAt: Date | null;
+        lockedBy: string | null;
+        participantId: string | null;
+        date: Date;
+        attachments: string;
+        reviewedBy: string | null;
+    }>;
+    updateNote(req: any, id: string, body: {
+        content?: string;
+        date?: string;
         attachments?: string[];
         participantId?: string;
     }): Promise<{

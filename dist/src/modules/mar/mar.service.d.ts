@@ -9,6 +9,8 @@ export declare class MarService {
     constructor(prisma: PrismaService);
     private logAudit;
     private canAccessMar;
+    private canEditMar;
+    private canRecordOutcome;
     private filterByAccess;
     createMarEntry(tenantId: string, userId: string, employeeId: string, data: {
         medicationName: string;
