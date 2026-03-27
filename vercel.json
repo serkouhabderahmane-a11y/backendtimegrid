@@ -12,5 +12,12 @@
       "src": "/api/(.*)",
       "dest": "dist/src/main.js"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "regions": ["iad1"],
+  "installCommand": "npm install",
+  "buildCommand": "npx prisma generate && npm run build",
+  "framework": null
 }
