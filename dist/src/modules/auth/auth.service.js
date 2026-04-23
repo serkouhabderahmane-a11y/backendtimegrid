@@ -74,6 +74,8 @@ let AuthService = class AuthService {
         });
         const tokens = await this.generateTokens(user);
         return {
+            success: true,
+            user_id: user.id,
             user: {
                 id: user.id,
                 email: user.email,
@@ -81,7 +83,11 @@ let AuthService = class AuthService {
                 lastName: user.lastName,
                 role: user.role,
             },
-            ...tokens,
+            role: user.role,
+            tenant_id: tenantId,
+            permissions: [],
+            token: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
         };
     }
     async login(dto) {
@@ -105,15 +111,20 @@ let AuthService = class AuthService {
         });
         const tokens = await this.generateTokens(user);
         return {
+            success: true,
+            user_id: user.id,
             user: {
                 id: user.id,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
                 role: user.role,
-                tenantId: user.tenantId,
             },
-            ...tokens,
+            role: user.role,
+            tenant_id: user.tenantId,
+            permissions: [],
+            token: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
         };
     }
     async refreshToken(refreshToken) {

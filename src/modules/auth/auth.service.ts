@@ -38,6 +38,8 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
 
     return {
+      success: true,
+      user_id: user.id,
       user: {
         id: user.id,
         email: user.email,
@@ -45,7 +47,11 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
       },
-      ...tokens,
+      role: user.role,
+      tenant_id: tenantId,
+      permissions: [],
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 
@@ -77,15 +83,20 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
 
     return {
+      success: true,
+      user_id: user.id,
       user: {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        tenantId: user.tenantId,
       },
-      ...tokens,
+      role: user.role,
+      tenant_id: user.tenantId,
+      permissions: [],
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 

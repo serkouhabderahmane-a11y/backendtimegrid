@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { ConfigModule } from './config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
@@ -41,6 +43,7 @@ import { SeedModule } from './modules/seed/seed.module';
     SharingModule,
     SeedModule,
   ],
-  providers: [AuditLogger, EmailService],
+  controllers: [AppController],
+  providers: [AppService, AuditLogger, EmailService],
 })
 export class AppModule {}

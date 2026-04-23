@@ -13,8 +13,8 @@ export declare class AuthController {
         }[];
     };
     register(tenantId: string, dto: CreateUserDto): Promise<{
-        accessToken: string;
-        refreshToken: string;
+        success: boolean;
+        user_id: string;
         user: {
             id: string;
             email: string;
@@ -22,18 +22,27 @@ export declare class AuthController {
             lastName: string;
             role: import("@prisma/client").$Enums.UserRole;
         };
+        role: import("@prisma/client").$Enums.UserRole;
+        tenant_id: string;
+        permissions: never[];
+        token: string;
+        refreshToken: string;
     }>;
     login(dto: LoginDto): Promise<{
-        accessToken: string;
-        refreshToken: string;
+        success: boolean;
+        user_id: string;
         user: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
             role: import("@prisma/client").$Enums.UserRole;
-            tenantId: string;
         };
+        role: import("@prisma/client").$Enums.UserRole;
+        tenant_id: string;
+        permissions: never[];
+        token: string;
+        refreshToken: string;
     }>;
     refresh(refreshToken: string): Promise<{
         accessToken: string;

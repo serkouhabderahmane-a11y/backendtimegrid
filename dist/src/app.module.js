@@ -8,6 +8,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const app_controller_1 = require("./app.controller");
+const app_service_1 = require("./app.service");
 const config_module_1 = require("./config/config.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const tenants_module_1 = require("./modules/tenants/tenants.module");
@@ -53,7 +55,8 @@ exports.AppModule = AppModule = __decorate([
             sharing_module_1.SharingModule,
             seed_module_1.SeedModule,
         ],
-        providers: [audit_logger_service_1.AuditLogger, email_service_1.EmailService],
+        controllers: [app_controller_1.AppController],
+        providers: [app_service_1.AppService, audit_logger_service_1.AuditLogger, email_service_1.EmailService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map
